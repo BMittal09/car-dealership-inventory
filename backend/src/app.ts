@@ -73,7 +73,8 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
     },
   );
 
-  app.use("/api/cars", requireAuth, requireAdmin, createCarRouter(carService));
+  // Public inventory browsing; car creation requires administrator access.
+  app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
 
   return app;
 }
