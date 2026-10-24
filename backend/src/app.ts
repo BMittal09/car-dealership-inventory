@@ -2,6 +2,7 @@ import express from "express";
 import { createAuthMiddleware } from "./auth/auth.middleware.js";
 import { createAuthRouter } from "./auth/auth.routes.js";
 import { createAuthService } from "./auth/auth.service.js";
+import { createRequireAdmin } from "./auth/authorization.middleware.js";
 import { createTokenService } from "./auth/token.service.js";
 import { createUserRepository } from "./auth/user.repository.js";
 import type { Database } from "./database.js";
@@ -17,7 +18,9 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
   const userRepository = createUserRepository(database);
   const tokenService = createTokenService(jwtSecret);
   const authService = createAuthService(userRepository, tokenService);
+
   const requireAuth = createAuthMiddleware(tokenService);
+  const requireAdmin = createRequireAdmin(userRepository);
 
   app.use(express.json());
 
@@ -54,6 +57,15 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
 
     response.status(200).json({ user });
   });
+
+  app.get(
+    "/api/admin/health",
+    requireAuth,
+    requireAdmin,
+    (_request, response) => {
+      response.status(200).json({ status: "ok" });
+    },
+  );
 
   return app;
 }
