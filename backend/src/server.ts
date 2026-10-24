@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 import { Pool } from "pg";
 import { createApp } from "./app.js";
+import { createShutdownHandler } from "./shutdown.js";
 
 config({ quiet: true });
 
@@ -39,10 +40,34 @@ const app = createApp({
 
 const port = Number(process.env.PORT ?? 3000);
 
-app.listen(port, "0.0.0.0", (error) => {
+const server = app.listen(port, "0.0.0.0", (error) => {
   if (error) {
     throw error;
   }
 
   console.log(`API running at http://localhost:${port}`);
+});
+
+const shutdown = createShutdownHandler(server, pool);
+
+function handleShutdown(signal: string) {
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+
+  void shutdown()
+    .then(() => {
+      console.log("Server and database connections closed.");
+      process.exitCode = 0;
+    })
+    .catch((error: unknown) => {
+      console.error("Graceful shutdown failed:", error);
+      process.exitCode = 1;
+    });
+}
+
+process.once("SIGINT", () => {
+  handleShutdown("SIGINT");
+});
+
+process.once("SIGTERM", () => {
+  handleShutdown("SIGTERM");
 });
