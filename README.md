@@ -2,9 +2,9 @@
 
 A full-stack car dealership inventory management application built with **React, TypeScript, Node.js, Express, and PostgreSQL**.
 
-AutoVault provides a responsive platform for customers to explore vehicle listings and a secure administrator dashboard for managing dealership inventory.
+AutoVault provides a responsive platform for customers to explore vehicle listings, search and filter inventory, view stock availability, and perform simulated vehicle purchases. Administrators can securely manage vehicles, update inventory, restock vehicles, and monitor dealership operations.
 
-The application was developed using test-driven development (TDD), with automated tests covering authentication, authorization, database operations, API validation, and frontend functionality.
+The application was developed using **Test-Driven Development (TDD)**, with automated tests covering authentication, authorization, API validation, database constraints, inventory operations, concurrency protection, and frontend functionality.
 
 ## Live Application
 
@@ -33,28 +33,52 @@ The application was developed using test-driven development (TDD), with automate
 ![AutoVault Vehicle Management](docs/screenshots/vehicle-management.png)
 
 ---
+
 ## Features
 
 ### Customer Features
 
 - Browse dealership vehicle inventory.
 - Search vehicles by manufacturer or model.
-- Filter vehicles by make, fuel type, transmission, availability, and price range.
-- View detailed information about individual vehicles.
+- Filter vehicles by make, category, fuel type, transmission, availability status, and price range.
 - Browse paginated vehicle listings.
+- View detailed vehicle specifications, pricing, category, and stock quantity.
+- Identify available, reserved, sold, and out-of-stock vehicles.
 - Register and log in securely.
+- Purchase available inventory units through a confirmation dialog.
+- Cancel a purchase without changing inventory.
+- Receive purchase success and error notifications.
+- View automatically refreshed inventory quantities after successful purchases.
 - Access a responsive interface across desktop and mobile devices.
+
+**Purchase behavior:** The purchase functionality demonstrates an inventory transaction. Each successful purchase decreases stock by one unit. No payment is collected, financial order is created, or vehicle ownership transferred.
 
 ### Administrator Features
 
 - Secure administrator dashboard with live inventory statistics.
-- View total, available, reserved, and sold vehicles.
-- Add new vehicles to the inventory.
-- Edit vehicle details, prices, and mileage.
-- Update vehicle availability status.
+- View total, available, reserved, and sold vehicle listings.
+- Add new vehicles with category and stock quantity.
+- Edit vehicle specifications, pricing, mileage, category, quantity, and availability.
+- Manage inventory quantities, including out-of-stock vehicles.
+- Restock vehicles through a dedicated confirmation dialog.
+- Preview updated stock quantities before restocking.
+- Prevent invalid restock quantities.
 - Permanently delete vehicles with confirmation.
 - Search, filter, and paginate vehicle records.
 - Receive success and error notifications after inventory operations.
+
+### Inventory Management
+
+- Vehicle categories and stock quantities stored in PostgreSQL.
+- Non-negative inventory quantities enforced through database constraints.
+- Atomic stock decrement when purchasing a vehicle.
+- Atomic stock increment when restocking.
+- Concurrent purchase protection to prevent overselling.
+- Concurrent restock protection to prevent lost updates.
+- Purchase restrictions for out-of-stock, reserved, and sold vehicles.
+- Stock quantity overflow protection.
+- Server-side validation of inventory operations.
+- Automatic inventory refresh using TanStack Query.
 
 ### Authentication and Security
 
@@ -97,41 +121,45 @@ The application was developed using test-driven development (TDD), with automate
                      USER / ADMIN
                           |
                           v
-                 React + TypeScript
-                    Tailwind CSS
+                  React + TypeScript
+                     Tailwind CSS
                           |
                           v
                      React Router
                           |
                           v
-                    TanStack Query
+                     TanStack Query
                           |
                           v
-                     Vercel CDN
+                      Vercel CDN
                           |
-                     /api/* Proxy
+                      /api/* Proxy
                           |
                           v
-                   Express REST API
-                      (Render)
+                    Express REST API
+                       (Render)
                           |
              +------------+------------+
              |                         |
              v                         v
-      Authentication API         Vehicle API
+      Authentication API          Vehicle API
              |                         |
-      JWT + Argon2id             CRUD Operations
+      JWT + Argon2id              CRUD Operations
+             |                    Search & Filtering
+             |                    Purchase & Restock
              |                         |
              +------------+------------+
                           |
                           v
-                    PostgreSQL
-                       (Neon)
+                     PostgreSQL
+                        (Neon)
 ```
 
 The React frontend communicates with the Express backend through REST APIs.
 
 In production, Vercel rewrites `/api/*` requests to the Render backend. The backend handles validation, authentication, authorization, and database operations.
+
+Inventory purchasing and restocking use conditional PostgreSQL updates to maintain stock consistency under concurrent requests.
 
 ## REST API Endpoints
 
@@ -146,13 +174,61 @@ In production, Vercel rewrites `/api/*` requests to the Render backend. The back
 
 ### Vehicle Inventory
 
-| Method | Endpoint        | Access | Description                                 |
-| ------ | --------------- | ------ | ------------------------------------------- |
-| GET    | `/api/cars`     | Public | List, search, filter, and paginate vehicles |
-| GET    | `/api/cars/:id` | Public | Retrieve vehicle details                    |
-| POST   | `/api/cars`     | Admin  | Create a vehicle                            |
-| PATCH  | `/api/cars/:id` | Admin  | Update a vehicle                            |
-| DELETE | `/api/cars/:id` | Admin  | Delete a vehicle                            |
+| Method | Endpoint                     | Access        | Description                                 |
+| ------ | ---------------------------- | ------------- | ------------------------------------------- |
+| GET    | `/api/cars`                  | Public        | List, search, filter, and paginate vehicles |
+| GET    | `/api/cars/:id`              | Public        | Retrieve vehicle details                    |
+| POST   | `/api/cars`                  | Admin         | Create a vehicle                            |
+| PATCH  | `/api/cars/:id`              | Admin         | Update a vehicle                            |
+| DELETE | `/api/cars/:id`              | Admin         | Delete a vehicle                            |
+| GET    | `/api/vehicles`              | Public        | List vehicles                               |
+| GET    | `/api/vehicles/search`       | Public        | Search and filter vehicles                  |
+| GET    | `/api/vehicles/:id`          | Public        | Retrieve vehicle details                    |
+| POST   | `/api/vehicles`              | Admin         | Create a vehicle                            |
+| PUT    | `/api/vehicles/:id`          | Admin         | Update a vehicle                            |
+| DELETE | `/api/vehicles/:id`          | Admin         | Delete a vehicle                            |
+| POST   | `/api/vehicles/:id/purchase` | Authenticated | Decrease inventory by one unit              |
+| POST   | `/api/vehicles/:id/restock`  | Admin         | Increase inventory quantity                 |
+
+The `/api/cars` endpoints support the existing frontend, while `/api/vehicles` provides the additional vehicle management and inventory transaction endpoints.
+
+### Purchase Example
+
+**Request:**
+
+```http
+POST /api/vehicles/:id/purchase
+Authorization: Bearer <access_token>
+```
+
+A successful request returns HTTP `200` with the updated vehicle record.
+
+Purchasing is allowed only when the vehicle is available and its quantity is greater than zero.
+
+Possible errors include:
+
+- `400` — Invalid vehicle ID
+- `401` — Authentication required
+- `404` — Vehicle not found
+- `409` — Out of stock or unavailable
+
+### Restock Example
+
+**Request:**
+
+```http
+POST /api/vehicles/:id/restock
+Authorization: Bearer <admin_access_token>
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+```
+
+A successful request returns HTTP `200` with the updated vehicle record.
+
+Only administrators can restock vehicles. The requested quantity must be a positive integer, and the resulting inventory must remain within PostgreSQL integer limits.
 
 ### Health Check
 
@@ -166,6 +242,49 @@ Successful response:
 }
 ```
 
+## Database Design
+
+### Users
+
+The `users` table stores:
+
+- Unique user ID
+- Name
+- Email
+- Argon2id password hash
+- Role (`user` or `admin`)
+
+Email uniqueness is enforced case-insensitively.
+
+### Cars
+
+The `cars` table stores:
+
+- Unique vehicle ID
+- Manufacturer and model
+- Vehicle category
+- Model year
+- Price
+- Inventory quantity
+- Mileage
+- Fuel type
+- Transmission
+- Availability status
+- Creation and update timestamps
+
+Database constraints prevent invalid values such as negative prices, negative mileage, negative stock quantities, blank categories, and unsupported availability statuses.
+
+### Database Migrations
+
+AutoVault uses versioned SQL migrations:
+
+1. `1792831118590_create-users.sql`
+2. `1792831869167_enforce-user-constraints.sql`
+3. `1792832200000_create-cars.sql`
+4. `1792870000000_add-inventory-fields.sql`
+
+The fourth migration introduces the `category` and `quantity` columns with database-level constraints.
+
 ## Project Structure
 
 ```text
@@ -177,6 +296,10 @@ car-dealership-inventory/
 |   |-- src/
 |   |   |-- auth/
 |   |   |-- cars/
+|   |   |   |-- car.repository.ts
+|   |   |   |-- car.routes.ts
+|   |   |   |-- car.service.ts
+|   |   |   |-- vehicle.routes.ts
 |   |   |-- middleware/
 |   |   |-- app.ts
 |   |   |-- database.ts
@@ -189,6 +312,8 @@ car-dealership-inventory/
 |   |-- src/
 |   |   |-- api/
 |   |   |-- components/
+|   |   |   |-- PurchaseVehicleButton.tsx
+|   |   |   |-- RestockVehicleDialog.tsx
 |   |   |-- context/
 |   |   |-- hooks/
 |   |   |-- layouts/
@@ -198,6 +323,9 @@ car-dealership-inventory/
 |   |-- vite.config.ts
 |   |-- vitest.config.ts
 |   |-- package.json
+|
+|-- docs/
+|   |-- screenshots/
 |
 |-- README.md
 ```
@@ -273,9 +401,17 @@ http://localhost:5173
 
 Vite automatically proxies local `/api` requests to the backend.
 
-## Automated Testing
+## Test-Driven Development
 
-AutoVault uses automated testing to validate backend and frontend behavior.
+AutoVault follows the **Red → Green → Refactor** development cycle.
+
+1. **Red:** Write a test describing the expected behavior and verify that it fails.
+2. **Green:** Implement the minimum functionality required to pass the test.
+3. **Refactor:** Improve the implementation while preserving passing tests.
+
+This approach was used throughout authentication, vehicle management, inventory validation, purchasing, restocking, and frontend development.
+
+## Automated Testing
 
 ### Backend Tests
 
@@ -289,13 +425,18 @@ npm run build
 Backend tests cover:
 
 - User registration and login
-- JWT authentication
-- Administrator authorization
-- Input validation
-- Authentication rate limiting
+- JWT authentication and administrator authorization
+- Input validation and authentication rate limiting
 - Database constraints
 - Vehicle CRUD operations
 - Inventory search, filtering, and pagination
+- Category and quantity validation
+- Atomic vehicle purchasing
+- Concurrent purchase protection
+- Administrator restocking
+- Concurrent stock increments
+- Out-of-stock and unavailable-vehicle restrictions
+- Inventory quantity boundaries and overflow protection
 - Security headers and CORS
 - Error handling and graceful shutdown
 
@@ -314,9 +455,13 @@ Frontend tests cover:
 - Login and logout behavior
 - JWT expiration handling
 - Protected administrator routes
-- Session invalidation
-- Query cache cleanup
+- Session invalidation and query cache cleanup
 - Vehicle API requests
+- Purchase and restock API requests
+- Purchase confirmation and cancellation
+- Purchase loading, success, and error states
+- Restock quantity validation and submission
+- Inventory cache invalidation
 - Delete confirmation behavior
 - Keyboard accessibility
 
@@ -324,31 +469,50 @@ Frontend tests cover:
 
 | Test Suite | Passing Tests |
 | ---------- | ------------: |
-| Backend    |           142 |
-| Frontend   |            32 |
-| **Total**  |       **174** |
+| Backend    |           184 |
+| Frontend   |            61 |
+| **Total**  |       **245** |
 
-All 174 automated tests passed during the final pre-deployment verification.
+The reported final verification completed with all 245 automated tests passing, successful TypeScript compilation and production builds, and zero frontend lint warnings or errors.
 
-Both production builds succeeded, and the frontend lint check reported zero warnings and errors.
+## Production End-to-End Verification
+
+The deployed application was tested using a temporary vehicle in the production environment.
+
+The verification included:
+
+1. Creating a vehicle with category and quantity.
+2. Confirming visibility in public and administrator inventory.
+3. Filtering inventory by vehicle category.
+4. Canceling a purchase without changing stock.
+5. Confirming a purchase and decreasing stock from 5 to 4.
+6. Restocking inventory from 4 to 7.
+7. Rejecting invalid restock quantities.
+8. Setting quantity to zero and verifying purchase restrictions.
+9. Canceling and confirming vehicle deletion.
+10. Removing the temporary vehicle and restoring the original empty inventory.
+
+These checks verified communication between the React frontend, Express backend, and Neon PostgreSQL database.
 
 ## Production Deployment
 
-AutoVault is deployed using three cloud services:
+AutoVault is deployed using three cloud services.
 
-**Vercel â€” Frontend**
+**Vercel — Frontend**
 
 Hosts the React application and forwards API requests to Render using `vercel.json`.
 
-**Render â€” Backend**
+**Render — Backend**
 
 Hosts the Express REST API with production environment variables, HTTPS, and automatic deployment from GitHub.
 
-**Neon â€” Database**
+**Neon — Database**
 
 Hosts the PostgreSQL production database on a separate branch from development.
 
-The production database uses migrations to manage its schema.
+The production database uses versioned migrations to manage schema changes.
+
+A data-inclusive Neon recovery branch was created before the inventory schema migration.
 
 ### Production Environment Variables
 
@@ -367,24 +531,35 @@ Sensitive environment variables are configured through the hosting provider and 
 - Administrator privileges are assigned separately.
 - Backend authorization is enforced independently of frontend route protection.
 - Passwords are stored as Argon2id hashes.
-- JWTs are verified by the backend before protected operations.
+- JWTs are verified before protected operations.
 - Access tokens are stored in memory rather than persistent browser storage.
 - Sessions expire automatically.
 - Authentication-related query caches are cleared during logout.
-- Destructive vehicle operations require explicit confirmation.
+- Vehicle deletion and inventory purchasing require explicit confirmation.
+- Administrator restocking is protected by backend role checks.
+- PostgreSQL conditional updates prevent inventory overselling and lost restock increments.
 - Production and development databases are isolated.
+
+## Current Limitations
+
+- The purchase endpoint decreases inventory but does not process payments, create orders, or transfer ownership.
+- Vehicle images currently use placeholder illustrations rather than uploaded photographs.
+- JWT sessions expire after one hour and do not use refresh tokens.
+- Administrator dashboard statistics represent vehicle listings by status, rather than total stock units.
+- The application is designed as an inventory management and TDD demonstration, not a complete commercial dealership transaction platform.
 
 ## Future Improvements
 
 - Vehicle image uploads and cloud storage.
+- Payment integration and order management.
+- Purchase history and inventory transaction logs.
 - Advanced vehicle sorting.
-- Enhanced administrator analytics and reporting.
+- Enhanced administrator analytics and stock-level reporting.
 - Secure refresh-token-based persistent sessions.
-- Expanded integration and end-to-end testing.
+- Expanded integration and browser-based end-to-end testing.
 
 ## Author
 
 **Bhavya Mittal**
 
 GitHub: https://github.com/BMittal09
-
