@@ -1,11 +1,12 @@
 import type { Car, CarListResult, CarRepository } from "./car.repository.js";
 import type { CarQueryInput } from "./car.query.schema.js";
-import type { CreateCarInput } from "./car.schema.js";
+import type { CreateCarInput, UpdateCarInput } from "./car.schema.js";
 
 export interface CarService {
   create(input: CreateCarInput): Promise<Car>;
   findAll(query: CarQueryInput): Promise<CarListResult>;
   findById(id: string): Promise<Car | null>;
+  update(id: string, input: UpdateCarInput): Promise<Car | null>;
 }
 
 export function createCarService(carRepository: CarRepository): CarService {
@@ -20,6 +21,10 @@ export function createCarService(carRepository: CarRepository): CarService {
 
     async findById(id: string) {
       return carRepository.findById(id);
+    },
+
+    async update(id: string, input: UpdateCarInput) {
+      return carRepository.update(id, input);
     },
   };
 }

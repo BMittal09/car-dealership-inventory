@@ -3,7 +3,7 @@ import type { RequestHandler } from "express";
 import * as z from "zod";
 import { carQuerySchema } from "./car.query.schema.js";
 import type { CarService } from "./car.service.js";
-import { createCarSchema } from "./car.schema.js";
+import { createCarSchema, updateCarSchema } from "./car.schema.js";
 
 const carIdSchema = z.uuid();
 
@@ -80,6 +80,49 @@ export function createCarRouter(
     const car = await carService.create(validation.data);
 
     response.status(201).json({ car });
+  });
+
+  router.patch("/:id", requireAuth, requireAdmin, async (request, response) => {
+    const idValidation = carIdSchema.safeParse(request.params.id);
+
+    if (!idValidation.success) {
+      response.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid car ID.",
+        },
+      });
+
+      return;
+    }
+
+    const bodyValidation = updateCarSchema.safeParse(request.body);
+
+    if (!bodyValidation.success) {
+      response.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid car data.",
+        },
+      });
+
+      return;
+    }
+
+    const car = await carService.update(idValidation.data, bodyValidation.data);
+
+    if (!car) {
+      response.status(404).json({
+        error: {
+          code: "CAR_NOT_FOUND",
+          message: "Car not found.",
+        },
+      });
+
+      return;
+    }
+
+    response.status(200).json({ car });
   });
 
   return router;
