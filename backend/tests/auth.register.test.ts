@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import * as argon2 from "argon2";
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { createApp } from "../src/app.js";
+import { createTestApp as createApp } from "./helpers/app.js";
 import { useTestDatabase } from "./helpers/database.js";
 
 interface StoredUser {

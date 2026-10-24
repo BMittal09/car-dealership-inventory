@@ -6,6 +6,7 @@ import type { Database } from "./database.js";
 
 export interface AppDependencies {
   database: Database;
+  jwtSecret: string;
 }
 
 export function createApp({ database }: AppDependencies) {
