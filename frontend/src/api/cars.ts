@@ -8,8 +8,10 @@ export interface Car {
   id: string;
   make: string;
   model: string;
+  category: string;
   year: number;
   price: string;
+  quantity: number;
   mileage: number;
   fuel_type: FuelType;
   transmission: Transmission;
@@ -21,6 +23,7 @@ export interface Car {
 export interface CarFilters {
   search?: string;
   make?: string;
+  category?: string;
   fuel_type?: FuelType;
   transmission?: Transmission;
   status?: CarStatus;
@@ -59,6 +62,30 @@ export class ApiError extends Error {
   }
 }
 
+async function parseApiError(
+  response: Response,
+  fallbackMessage: string,
+): Promise<never> {
+  let code = "API_ERROR";
+  let message = fallbackMessage;
+
+  try {
+    const body: {
+      error?: {
+        code?: string;
+        message?: string;
+      };
+    } = await response.json();
+
+    code = body.error?.code ?? code;
+    message = body.error?.message ?? message;
+  } catch {
+    // Preserve the fallback message for non-JSON errors.
+  }
+
+  throw new ApiError(response.status, code, message);
+}
+
 async function apiGet<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(endpoint, {
     method: "GET",
@@ -69,24 +96,7 @@ async function apiGet<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
   });
 
   if (!response.ok) {
-    let code = "API_ERROR";
-    let message = "Something went wrong. Please try again.";
-
-    try {
-      const body: {
-        error?: {
-          code?: string;
-          message?: string;
-        };
-      } = await response.json();
-
-      code = body.error?.code ?? code;
-      message = body.error?.message ?? message;
-    } catch {
-      // Keep the fallback message if the response is not JSON.
-    }
-
-    throw new ApiError(response.status, code, message);
+    return parseApiError(response, "Something went wrong. Please try again.");
   }
 
   return (await response.json()) as T;
@@ -125,11 +135,17 @@ export async function getCarById(
 export interface CreateCarInput {
   make: string;
   model: string;
+  category: string;
   year: number;
   price: string;
+  quantity: number;
   mileage: number;
   fuel_type: FuelType;
   transmission: Transmission;
+}
+
+export interface UpdateCarInput extends Partial<CreateCarInput> {
+  status?: CarStatus;
 }
 
 export async function createCar(
@@ -147,31 +163,13 @@ export async function createCar(
   });
 
   if (!response.ok) {
-    let code = "API_ERROR";
-    let message = "Unable to create vehicle. Please try again.";
-
-    try {
-      const body: {
-        error?: {
-          code?: string;
-          message?: string;
-        };
-      } = await response.json();
-
-      code = body.error?.code ?? code;
-      message = body.error?.message ?? message;
-    } catch {
-      // Preserve the fallback error.
-    }
-
-    throw new ApiError(response.status, code, message);
+    return parseApiError(
+      response,
+      "Unable to create vehicle. Please try again.",
+    );
   }
 
   return (await response.json()) as CarDetailsResponse;
-}
-
-export interface UpdateCarInput extends Partial<CreateCarInput> {
-  status?: CarStatus;
 }
 
 export async function updateCar(
@@ -190,24 +188,10 @@ export async function updateCar(
   });
 
   if (!response.ok) {
-    let code = "API_ERROR";
-    let message = "Unable to update vehicle. Please try again.";
-
-    try {
-      const body: {
-        error?: {
-          code?: string;
-          message?: string;
-        };
-      } = await response.json();
-
-      code = body.error?.code ?? code;
-      message = body.error?.message ?? message;
-    } catch {
-      // Preserve the fallback error.
-    }
-
-    throw new ApiError(response.status, code, message);
+    return parseApiError(
+      response,
+      "Unable to update vehicle. Please try again.",
+    );
   }
 
   return (await response.json()) as CarDetailsResponse;
@@ -226,26 +210,72 @@ export async function deleteCar(
   });
 
   if (!response.ok) {
-    let code = "API_ERROR";
-    let message = "Unable to delete vehicle. Please try again.";
-
-    try {
-      const body: {
-        error?: {
-          code?: string;
-          message?: string;
-        };
-      } = await response.json();
-
-      code = body.error?.code ?? code;
-      message = body.error?.message ?? message;
-    } catch {
-      // Preserve the fallback error message.
-    }
-
-    throw new ApiError(response.status, code, message);
+    return parseApiError(
+      response,
+      "Unable to delete vehicle. Please try again.",
+    );
   }
 
-  // HTTP 204 has no response body.
-  // Do not call response.json() here.
+  // HTTP 204 intentionally has no response body.
+}
+
+export async function purchaseVehicle(
+  id: string,
+  accessToken: string,
+): Promise<CarDetailsResponse> {
+  const response = await fetch(
+    `/api/vehicles/${encodeURIComponent(id)}/purchase`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return parseApiError(
+      response,
+      "Unable to purchase vehicle. Please try again.",
+    );
+  }
+
+  return (await response.json()) as CarDetailsResponse;
+}
+
+export async function restockVehicle(
+  id: string,
+  quantity: number,
+  accessToken: string,
+): Promise<CarDetailsResponse> {
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 2147483647) {
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      "Restock quantity must be a positive integer.",
+    );
+  }
+
+  const response = await fetch(
+    `/api/vehicles/${encodeURIComponent(id)}/restock`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ quantity }),
+    },
+  );
+
+  if (!response.ok) {
+    return parseApiError(
+      response,
+      "Unable to restock vehicle. Please try again.",
+    );
+  }
+
+  return (await response.json()) as CarDetailsResponse;
 }

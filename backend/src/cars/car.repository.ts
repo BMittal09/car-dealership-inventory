@@ -6,8 +6,10 @@ export interface Car {
   id: string;
   make: string;
   model: string;
+  category: string;
   year: number;
   price: string;
+  quantity: number;
   mileage: number;
   fuel_type: CreateCarInput["fuel_type"];
   transmission: CreateCarInput["transmission"];
@@ -26,35 +28,52 @@ export interface CarListResult {
   };
 }
 
+export type PurchaseResult =
+  | { outcome: "purchased"; car: Car }
+  | { outcome: "out_of_stock" }
+  | { outcome: "unavailable" }
+  | { outcome: "not_found" };
+
+export type RestockResult =
+  | { outcome: "restocked"; car: Car }
+  | { outcome: "not_found" }
+  | { outcome: "quantity_overflow" };
+
 export interface CarRepository {
   create(input: CreateCarInput): Promise<Car>;
   findAll(query: CarQueryInput): Promise<CarListResult>;
   findById(id: string): Promise<Car | null>;
   update(id: string, input: UpdateCarInput): Promise<Car | null>;
   delete(id: string): Promise<boolean>;
+  purchase(id: string): Promise<PurchaseResult>;
+  restock(id: string, quantity: number): Promise<RestockResult>;
 }
 
 const CAR_COLUMNS = `
-  id, make, model, year, price, mileage,
-  fuel_type, transmission, status,
-  created_at, updated_at
+  id, make, model, category, year, price,
+  quantity, mileage, fuel_type, transmission,
+  status, created_at, updated_at
 `;
+
+const MAX_QUANTITY = 2147483647;
 
 export function createCarRepository(database: Database): CarRepository {
   return {
     async create(input: CreateCarInput) {
       const result = await database.query<Car>(
         `INSERT INTO public.cars (
-          make, model, year, price, mileage,
-          fuel_type, transmission
+          make, model, category, year, price,
+          quantity, mileage, fuel_type, transmission
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING ${CAR_COLUMNS}`,
         [
           input.make,
           input.model,
+          input.category,
           input.year,
           input.price,
+          input.quantity,
           input.mileage,
           input.fuel_type,
           input.transmission,
@@ -90,6 +109,10 @@ export function createCarRepository(database: Database): CarRepository {
         addCondition("make", "ILIKE", query.make);
       }
 
+      if (query.category) {
+        addCondition("category", "ILIKE", query.category);
+      }
+
       if (query.fuel_type) {
         addCondition("fuel_type", "=", query.fuel_type);
       }
@@ -121,22 +144,16 @@ export function createCarRepository(database: Database): CarRepository {
       );
 
       const total = Number(countResult.rows[0]?.total ?? 0);
-
       const offset = (query.page - 1) * query.limit;
-
-      const paginationValues = [...values, query.limit, offset];
-
-      const limitParameter = values.length + 1;
-      const offsetParameter = values.length + 2;
 
       const result = await database.query<Car>(
         `SELECT ${CAR_COLUMNS}
          FROM public.cars
          ${whereClause}
          ORDER BY created_at DESC, id DESC
-         LIMIT $${limitParameter}
-         OFFSET $${offsetParameter}`,
-        paginationValues,
+         LIMIT $${values.length + 1}
+         OFFSET $${values.length + 2}`,
+        [...values, query.limit, offset],
       );
 
       return {
@@ -165,8 +182,10 @@ export function createCarRepository(database: Database): CarRepository {
       const allowedColumns = [
         "make",
         "model",
+        "category",
         "year",
         "price",
+        "quantity",
         "mileage",
         "fuel_type",
         "transmission",
@@ -216,6 +235,94 @@ export function createCarRepository(database: Database): CarRepository {
       );
 
       return (result.rowCount ?? 0) > 0;
+    },
+
+    async purchase(id: string): Promise<PurchaseResult> {
+      const result = await database.query<Car>(
+        `UPDATE public.cars
+         SET
+           quantity = quantity - 1,
+           updated_at = GREATEST(
+             clock_timestamp(),
+             updated_at + INTERVAL '1 millisecond'
+           )
+         WHERE id = $1
+           AND quantity > 0
+           AND status = 'available'
+         RETURNING ${CAR_COLUMNS}`,
+        [id],
+      );
+
+      const purchasedCar = result.rows[0];
+
+      if (purchasedCar) {
+        return {
+          outcome: "purchased",
+          car: purchasedCar,
+        };
+      }
+
+      const existingCar = await database.query<{
+        quantity: number;
+        status: Car["status"];
+      }>(
+        `SELECT quantity, status
+         FROM public.cars
+         WHERE id = $1`,
+        [id],
+      );
+
+      const car = existingCar.rows[0];
+
+      if (!car) {
+        return { outcome: "not_found" };
+      }
+
+      if (car.status !== "available") {
+        return { outcome: "unavailable" };
+      }
+
+      return { outcome: "out_of_stock" };
+    },
+
+    async restock(id: string, quantity: number): Promise<RestockResult> {
+      // Atomic increment prevents lost updates when
+      // multiple administrators restock simultaneously.
+      const result = await database.query<Car>(
+        `UPDATE public.cars
+         SET
+           quantity = quantity + $2,
+           updated_at = GREATEST(
+             clock_timestamp(),
+             updated_at + INTERVAL '1 millisecond'
+           )
+         WHERE id = $1
+           AND quantity <= $3::integer - $2::integer
+         RETURNING ${CAR_COLUMNS}`,
+        [id, quantity, MAX_QUANTITY],
+      );
+
+      const restockedCar = result.rows[0];
+
+      if (restockedCar) {
+        return {
+          outcome: "restocked",
+          car: restockedCar,
+        };
+      }
+
+      const existingCar = await database.query<{ id: string }>(
+        `SELECT id
+         FROM public.cars
+         WHERE id = $1`,
+        [id],
+      );
+
+      if (!existingCar.rows[0]) {
+        return { outcome: "not_found" };
+      }
+
+      return { outcome: "quantity_overflow" };
     },
   };
 }

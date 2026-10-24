@@ -1,8 +1,10 @@
 import {
   ArrowUpRight,
   CalendarDays,
+  CarFront,
   Fuel,
   Gauge,
+  Package,
   Settings2,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -31,20 +33,32 @@ function formatMileage(mileage: number) {
 }
 
 export default function CarCard({ car }: CarCardProps) {
+  const isOutOfStock = car.quantity === 0;
+  const isPurchasable = car.status === "available" && car.quantity > 0;
+
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl">
       <div className="relative flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50">
         <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:20px_20px]" />
 
-        <span className="relative flex h-28 w-28 items-center justify-center rounded-full border border-slate-200 bg-white/70 text-6xl shadow-sm">
-          🚘
-        </span>
+        <CarFront
+          size={112}
+          strokeWidth={1}
+          aria-label="Vehicle illustration"
+          className="relative text-slate-400"
+        />
 
         <span
           className={`absolute left-4 top-4 rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${statusStyles[car.status]}`}
         >
           {car.status}
         </span>
+
+        {isOutOfStock && (
+          <span className="absolute right-4 top-4 rounded-full bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700">
+            Out of Stock
+          </span>
+        )}
       </div>
 
       <div className="p-6">
@@ -57,6 +71,10 @@ export default function CarCard({ car }: CarCardProps) {
             <h3 className="mt-1 text-xl font-bold tracking-tight text-slate-950">
               {car.model}
             </h3>
+
+            <p className="mt-2 text-xs font-medium capitalize text-slate-500">
+              {car.category}
+            </p>
           </div>
 
           <Link
@@ -89,6 +107,36 @@ export default function CarCard({ car }: CarCardProps) {
             {car.transmission}
           </div>
         </div>
+
+        <div className="mt-5 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Package size={17} className="text-slate-500" />
+
+            <span className="text-sm font-medium text-slate-700">
+              Stock Quantity
+            </span>
+          </div>
+
+          <span
+            className={`text-sm font-bold ${
+              isOutOfStock ? "text-red-600" : "text-emerald-700"
+            }`}
+          >
+            {car.quantity}
+          </span>
+        </div>
+
+        <p
+          className={`mt-3 text-xs font-medium ${
+            isPurchasable ? "text-emerald-700" : "text-amber-700"
+          }`}
+        >
+          {isPurchasable
+            ? "Available for purchase"
+            : isOutOfStock
+              ? "Currently out of stock"
+              : "Not available for purchase"}
+        </p>
 
         <div className="mt-5 flex items-end justify-between gap-3">
           <div>

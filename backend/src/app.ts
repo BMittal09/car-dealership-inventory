@@ -11,6 +11,7 @@ import { createUserRepository } from "./auth/user.repository.js";
 import { createCarRepository } from "./cars/car.repository.js";
 import { createCarRouter } from "./cars/car.routes.js";
 import { createCarService } from "./cars/car.service.js";
+import { createVehicleRouter } from "./cars/vehicle.routes.js";
 import type { Database } from "./database.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
@@ -49,7 +50,7 @@ export function createApp({
   app.use(
     cors({
       origin: allowedOrigins,
-      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Authorization", "Content-Type"],
       optionsSuccessStatus: 204,
     }),
@@ -104,7 +105,14 @@ export function createApp({
     },
   );
 
+  // Existing AutoVault endpoints remain unchanged.
   app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
+
+  // TDD Kata vehicle endpoints.
+  app.use(
+    "/api/vehicles",
+    createVehicleRouter(carService, requireAuth, requireAdmin),
+  );
 
   app.use(errorHandler);
 

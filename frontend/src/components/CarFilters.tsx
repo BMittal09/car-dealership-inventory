@@ -15,6 +15,17 @@ interface CarFiltersProps {
 const inputStyles =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
 
+const categories = [
+  { value: "sedan", label: "Sedan" },
+  { value: "suv", label: "SUV" },
+  { value: "hatchback", label: "Hatchback" },
+  { value: "coupe", label: "Coupe" },
+  { value: "convertible", label: "Convertible" },
+  { value: "pickup", label: "Pickup Truck" },
+  { value: "van", label: "Van" },
+  { value: "other", label: "Other" },
+];
+
 export default function CarFilters({
   filters,
   onChange,
@@ -108,6 +119,31 @@ export default function CarFilters({
 
         <div>
           <label
+            htmlFor="car-category"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Vehicle Category
+          </label>
+
+          <select
+            id="car-category"
+            value={filters.category ?? ""}
+            onChange={(event) =>
+              updateFilter("category", event.target.value || undefined)
+            }
+            className={inputStyles}
+          >
+            <option value="">All categories</option>
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
             htmlFor="car-fuel"
             className="mb-2 block text-sm font-semibold text-slate-700"
           >
@@ -196,7 +232,7 @@ export default function CarFilters({
             htmlFor="car-min-price"
             className="mb-2 block text-sm font-semibold text-slate-700"
           >
-            Minimum Price (₹)
+            Minimum Price (INR)
           </label>
 
           <input
@@ -216,7 +252,7 @@ export default function CarFilters({
             htmlFor="car-max-price"
             className="mb-2 block text-sm font-semibold text-slate-700"
           >
-            Maximum Price (₹)
+            Maximum Price (INR)
           </label>
 
           <input
