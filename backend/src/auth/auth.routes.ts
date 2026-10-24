@@ -35,5 +35,22 @@ export function createAuthRouter(authService: AuthService) {
     response.status(201).json({ user });
   });
 
+  router.post("/login", async (request, response) => {
+    const result = await authService.login(request.body);
+
+    if (!result) {
+      response.status(401).json({
+        error: {
+          code: "INVALID_CREDENTIALS",
+          message: "Invalid email or password.",
+        },
+      });
+
+      return;
+    }
+
+    response.status(200).json(result);
+  });
+
   return router;
 }
