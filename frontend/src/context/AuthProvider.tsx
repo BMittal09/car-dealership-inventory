@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { AuthUser, LoginResponse } from "../api/auth";
 import { AuthContext } from "./AuthContext";
 
@@ -40,25 +41,37 @@ function getTokenExpiration(token: string): number | null {
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
+  const queryClient = useQueryClient();
+
   const [session, setSession] = useState<AuthSession | null>(null);
 
   const logout = useCallback(() => {
+    // Immediately clear the authenticated session.
     setSession(null);
-  }, []);
 
-  const login = useCallback((result: LoginResponse) => {
-    const expiration = getTokenExpiration(result.accessToken);
+    // Clear cached queries synchronously so a later login
+    // cannot be affected by delayed cleanup.
+    queryClient.clear();
+  }, [queryClient]);
 
-    if (!expiration || expiration <= Date.now()) {
-      setSession(null);
-      throw new Error("Invalid or expired authentication token.");
-    }
+  const login = useCallback(
+    (result: LoginResponse) => {
+      const expiration = getTokenExpiration(result.accessToken);
 
-    setSession({
-      user: result.user,
-      accessToken: result.accessToken,
-    });
-  }, []);
+      if (!expiration || expiration <= Date.now()) {
+        throw new Error("Invalid or expired authentication token.");
+      }
+
+      // Remove any data belonging to a previous session.
+      queryClient.clear();
+
+      setSession({
+        user: result.user,
+        accessToken: result.accessToken,
+      });
+    },
+    [queryClient],
+  );
 
   useEffect(() => {
     if (!session) {
@@ -67,21 +80,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     const expiration = getTokenExpiration(session.accessToken);
 
-    if (!expiration) {
-      return;
-    }
-
-    const remaining = expiration - Date.now();
-
-    if (remaining <= 0) {
-      return;
-    }
+    const remaining = expiration ? expiration - Date.now() : 0;
 
     const timeout = window.setTimeout(
       () => {
         logout();
       },
-      Math.min(remaining, 2_147_483_647),
+      Math.max(0, Math.min(remaining, 2_147_483_647)),
     );
 
     return () => {

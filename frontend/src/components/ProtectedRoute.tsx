@@ -4,6 +4,7 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { verifyAdminAccess } from "../api/auth";
 import { ApiError } from "../api/cars";
 import { useAuth } from "../hooks/useAuth";
+import SessionExpiredRedirect from "./SessionExpiredRedirect";
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
@@ -65,9 +66,7 @@ export default function ProtectedRoute({
     const error = adminVerification.error;
 
     if (error instanceof ApiError && error.status === 401) {
-      return (
-        <Navigate to="/login" replace state={{ from: location.pathname }} />
-      );
+      return <SessionExpiredRedirect />;
     }
 
     if (error instanceof ApiError && error.status === 403) {
