@@ -326,7 +326,9 @@ car-dealership-inventory/
 |
 |-- docs/
 |   |-- screenshots/
+|   |-- TEST_REPORT.md
 |
+|-- PROMPTS.md
 |-- README.md
 ```
 
@@ -411,6 +413,8 @@ AutoVault follows the **Red → Green → Refactor** development cycle.
 
 This approach was used throughout authentication, vehicle management, inventory validation, purchasing, restocking, and frontend development.
 
+The Git commit history contains multiple explicit Red and Green commits demonstrating incremental test-driven development.
+
 ## Automated Testing
 
 ### Backend Tests
@@ -467,13 +471,23 @@ Frontend tests cover:
 
 ### Verified Test Results
 
-| Test Suite | Passing Tests |
-| ---------- | ------------: |
-| Backend    |           184 |
-| Frontend   |            61 |
-| **Total**  |       **245** |
+| Test Suite | Test Files | Passing Tests |
+| ---------- | ---------: | ------------: |
+| Backend    |         32 |           184 |
+| Frontend   |          9 |            60 |
+| **Total**  |     **41** |       **244** |
 
-The reported final verification completed with all 245 automated tests passing, successful TypeScript compilation and production builds, and zero frontend lint warnings or errors.
+**All 244 automated tests passed during the final verification.**
+
+Additional verification results:
+
+- Backend TypeScript checking: Passed
+- Backend production build: Passed
+- Frontend TypeScript checking: Passed
+- Frontend production build: Passed
+- Frontend lint: 0 warnings and 0 errors
+
+For detailed test results, methodology, and production verification, see the [Test Report](docs/TEST_REPORT.md).
 
 ## Production End-to-End Verification
 
@@ -539,6 +553,71 @@ Sensitive environment variables are configured through the hosting provider and 
 - Administrator restocking is protected by backend role checks.
 - PostgreSQL conditional updates prevent inventory overselling and lost restock increments.
 - Production and development databases are isolated.
+
+## My AI Usage
+
+### AI Tools Used
+
+**ChatGPT (OpenAI)** was used as an AI-assisted development tool throughout the AutoVault project.
+
+### How I Used AI
+
+I used ChatGPT to assist with different stages of the software development lifecycle.
+
+**1. Project Planning and Architecture**
+
+- Broke down the project requirements into smaller, manageable development tasks.
+- Planned the full-stack architecture using React, TypeScript, Express, and PostgreSQL.
+- Discussed API endpoint structures, database schemas, authentication, and role-based authorization.
+- Planned the development sequence around the Test-Driven Development methodology.
+
+**2. Test-Driven Development**
+
+- Used ChatGPT to help formulate test cases before implementing functionality.
+- Followed the Red → Green → Refactor approach for backend APIs and inventory operations.
+- Generated and refined automated tests for authentication, authorization, vehicle CRUD, purchasing, restocking, and validation.
+- Used failing test results to identify missing functionality and guide subsequent implementation.
+
+**3. Backend Development**
+
+- Assisted with generating TypeScript and Express code for REST API endpoints.
+- Helped implement JWT authentication, Argon2id password hashing, and administrator authorization.
+- Assisted with PostgreSQL queries, database migrations, and input validation using Zod.
+- Helped implement atomic inventory updates to prevent overselling and lost stock updates during concurrent operations.
+
+**4. Frontend Development**
+
+- Assisted with developing React components, forms, and inventory management interfaces.
+- Helped integrate TanStack Query for API communication and cache invalidation.
+- Assisted with implementing purchase confirmation dialogs, stock availability indicators, category filtering, and administrator restocking controls.
+- Helped identify and resolve TypeScript, React Hooks, and frontend testing issues.
+
+**5. Debugging and Testing**
+
+- Shared terminal output, error messages, and failing test results with ChatGPT to diagnose issues.
+- Used AI suggestions to troubleshoot PostgreSQL query errors, database migrations, React component behavior, and Vitest assertions.
+- Ran the suggested commands locally, inspected the results, and continued refining the implementation until the relevant checks passed.
+- Verified functionality through automated tests and manual testing of the deployed application.
+
+**6. Deployment and Documentation**
+
+- Used ChatGPT to help configure and troubleshoot deployment using Vercel, Render, and Neon PostgreSQL.
+- Followed guided production verification steps for authentication, vehicle management, purchasing, restocking, and inventory consistency.
+- Used AI assistance to improve the project README, technical explanations, and API documentation.
+
+### My Reflection on AI-Assisted Development
+
+Using ChatGPT helped me approach a large full-stack project in a more structured and systematic way. Instead of attempting to implement the entire application at once, I divided the work into smaller features and used TDD to verify functionality incrementally.
+
+One of the biggest benefits was debugging. When tests failed or unexpected errors occurred, AI helped me understand possible causes and suggested ways to investigate them. However, the suggestions were not always correct on the first attempt. I still needed to examine error messages, run tests, verify database behavior, and make sure the proposed changes worked with the existing codebase.
+
+AI also helped accelerate repetitive tasks such as writing test cases, generating component structures, and drafting documentation. This allowed me to spend more time understanding system behavior, validating functionality, and testing edge cases.
+
+A key lesson from this project was that **AI-generated code should not be treated as automatically correct**. Every important change needs to be tested, reviewed, and validated. The Red → Green → Refactor workflow was particularly useful because it provided measurable evidence that the implementation behaved as expected.
+
+Overall, ChatGPT served as a development assistant rather than a replacement for testing, debugging, or engineering judgment. The project reinforced the importance of combining AI-assisted development with careful validation, security awareness, and maintainable software design.
+
+The original AI development conversation is referenced in [PROMPTS.md](PROMPTS.md).
 
 ## Current Limitations
 
