@@ -1,7 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router";
+import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./layouts/MainLayout";
+import AddCarPage from "./pages/AddCarPage";
+import AdminCarsPage from "./pages/AdminCarsPage";
 import AdminPage from "./pages/AdminPage";
 import CarDetailsPage from "./pages/CarDetailsPage";
+import EditCarPage from "./pages/EditCarPage";
 import HomePage from "./pages/HomePage";
 import InventoryPage from "./pages/InventoryPage";
 import LoginPage from "./pages/LoginPage";
@@ -17,7 +21,14 @@ export default function App() {
           <Route path="/cars/:id" element={<CarDetailsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+
+          <Route element={<ProtectedRoute requireAdmin />}>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/cars" element={<AdminCarsPage />} />
+            <Route path="/admin/cars/new" element={<AddCarPage />} />
+            <Route path="/admin/cars/:id/edit" element={<EditCarPage />} />
+          </Route>
+
           <Route
             path="*"
             element={
