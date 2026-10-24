@@ -7,3 +7,5 @@ export const registrationSchema = z.strictObject({
 
   password: z.string().min(15).max(128),
 });
+
+export type RegistrationInput = z.infer<typeof registrationSchema>;
