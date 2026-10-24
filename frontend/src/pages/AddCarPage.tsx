@@ -13,8 +13,10 @@ import { useAuth } from "../hooks/useAuth";
 interface CarFormValues {
   make: string;
   model: string;
+  category: string;
   year: string;
   price: string;
+  quantity: string;
   mileage: string;
   fuel_type: FuelType;
   transmission: Transmission;
@@ -23,12 +25,25 @@ interface CarFormValues {
 const initialValues: CarFormValues = {
   make: "",
   model: "",
+  category: "",
   year: "",
   price: "",
+  quantity: "",
   mileage: "",
   fuel_type: "petrol",
   transmission: "manual",
 };
+
+const categories = [
+  { value: "sedan", label: "Sedan" },
+  { value: "suv", label: "SUV" },
+  { value: "hatchback", label: "Hatchback" },
+  { value: "coupe", label: "Coupe" },
+  { value: "convertible", label: "Convertible" },
+  { value: "pickup", label: "Pickup Truck" },
+  { value: "van", label: "Van" },
+  { value: "other", label: "Other" },
+];
 
 const inputStyles =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
@@ -40,6 +55,10 @@ function validateForm(values: CarFormValues): string | null {
 
   if (!values.model.trim() || values.model.trim().length > 100) {
     return "Model must contain between 1 and 100 characters.";
+  }
+
+  if (!values.category.trim() || values.category.trim().length > 100) {
+    return "Please select a valid vehicle category.";
   }
 
   const year = Number(values.year);
@@ -58,6 +77,17 @@ function validateForm(values: CarFormValues): string | null {
     !Number.isFinite(Number(values.price))
   ) {
     return "Enter a valid non-negative price with at most two decimal places.";
+  }
+
+  const quantity = Number(values.quantity);
+
+  if (
+    !/^\d+$/.test(values.quantity) ||
+    !Number.isSafeInteger(quantity) ||
+    quantity < 0 ||
+    quantity > 2147483647
+  ) {
+    return "Quantity must be a whole number between 0 and 2147483647.";
   }
 
   const mileage = Number(values.mileage);
@@ -135,8 +165,10 @@ export default function AddCarPage() {
     const input: CreateCarInput = {
       make: values.make.trim(),
       model: values.model.trim(),
+      category: values.category.trim(),
       year: Number(values.year),
       price: Number(values.price).toFixed(2),
+      quantity: Number(values.quantity),
       mileage: Number(values.mileage),
       fuel_type: values.fuel_type,
       transmission: values.transmission,
@@ -192,6 +224,7 @@ export default function AddCarPage() {
 
           <p className="mt-2 text-sm text-slate-500">
             All fields are required. New vehicles are listed as available.
+            Quantity can be zero for out-of-stock vehicles.
           </p>
         </div>
 
@@ -238,6 +271,31 @@ export default function AddCarPage() {
 
           <div>
             <label
+              htmlFor="car-category"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Vehicle Category
+            </label>
+
+            <select
+              id="car-category"
+              required
+              value={values.category}
+              onChange={(event) => updateField("category", event.target.value)}
+              className={inputStyles}
+            >
+              <option value="">Select a category</option>
+
+              {categories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
               htmlFor="car-year"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
@@ -263,7 +321,7 @@ export default function AddCarPage() {
               htmlFor="car-price"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Price (₹)
+              Price (INR)
             </label>
 
             <input
@@ -278,6 +336,32 @@ export default function AddCarPage() {
               onChange={(event) => updateField("price", event.target.value)}
               className={inputStyles}
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="car-quantity"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Quantity in Stock
+            </label>
+
+            <input
+              id="car-quantity"
+              type="number"
+              required
+              min={0}
+              max={2147483647}
+              step={1}
+              placeholder="e.g. 5"
+              value={values.quantity}
+              onChange={(event) => updateField("quantity", event.target.value)}
+              className={inputStyles}
+            />
+
+            <p className="mt-2 text-xs text-slate-500">
+              Enter 0 if the vehicle is currently out of stock.
+            </p>
           </div>
 
           <div>

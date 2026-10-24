@@ -18,6 +18,8 @@ export const carQuerySchema = z
 
     make: z.string().trim().min(1).max(100).optional(),
 
+    category: z.string().trim().min(1).max(100).optional(),
+
     fuel_type: z
       .enum(["petrol", "diesel", "electric", "hybrid", "cng"])
       .optional(),

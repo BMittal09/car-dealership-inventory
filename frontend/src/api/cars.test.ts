@@ -12,8 +12,10 @@ const ACCESS_TOKEN = "test-admin-access-token";
 const testCar: CreateCarInput = {
   make: "Toyota",
   model: "Corolla",
+  category: "sedan",
   year: 2023,
   price: "1250000.00",
+  quantity: 5,
   mileage: 18000,
   fuel_type: "petrol",
   transmission: "automatic",
@@ -67,6 +69,8 @@ describe("Vehicle management API", () => {
 
     expect(result.car.id).toBe(createdCar.id);
     expect(result.car.make).toBe("Toyota");
+    expect(result.car.category).toBe("sedan");
+    expect(result.car.quantity).toBe(5);
   });
 
   it("updates a vehicle using PATCH and the admin JWT", async () => {
@@ -108,6 +112,7 @@ describe("Vehicle management API", () => {
 
     expect(result.car.price).toBe("1190000.00");
     expect(result.car.status).toBe("reserved");
+    expect(result.car.quantity).toBe(5);
   });
 
   it("deletes a vehicle using DELETE and handles HTTP 204", async () => {

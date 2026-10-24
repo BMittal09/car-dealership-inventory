@@ -17,13 +17,26 @@ import { useAuth } from "../hooks/useAuth";
 interface CarFormValues {
   make: string;
   model: string;
+  category: string;
   year: string;
   price: string;
+  quantity: string;
   mileage: string;
   fuel_type: FuelType;
   transmission: Transmission;
   status: CarStatus;
 }
+
+const categories = [
+  { value: "sedan", label: "Sedan" },
+  { value: "suv", label: "SUV" },
+  { value: "hatchback", label: "Hatchback" },
+  { value: "coupe", label: "Coupe" },
+  { value: "convertible", label: "Convertible" },
+  { value: "pickup", label: "Pickup Truck" },
+  { value: "van", label: "Van" },
+  { value: "other", label: "Other" },
+];
 
 const inputStyles =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
@@ -32,8 +45,10 @@ function toFormValues(car: Car): CarFormValues {
   return {
     make: car.make,
     model: car.model,
+    category: car.category,
     year: String(car.year),
     price: car.price,
+    quantity: String(car.quantity),
     mileage: String(car.mileage),
     fuel_type: car.fuel_type,
     transmission: car.transmission,
@@ -48,6 +63,10 @@ function validateForm(values: CarFormValues): string | null {
 
   if (!values.model.trim() || values.model.trim().length > 100) {
     return "Model must contain between 1 and 100 characters.";
+  }
+
+  if (!values.category.trim() || values.category.trim().length > 100) {
+    return "Please select a valid vehicle category.";
   }
 
   const year = Number(values.year);
@@ -66,6 +85,17 @@ function validateForm(values: CarFormValues): string | null {
     !Number.isFinite(Number(values.price))
   ) {
     return "Enter a valid non-negative price with at most two decimal places.";
+  }
+
+  const quantity = Number(values.quantity);
+
+  if (
+    !/^\d+$/.test(values.quantity) ||
+    !Number.isSafeInteger(quantity) ||
+    quantity < 0 ||
+    quantity > 2147483647
+  ) {
+    return "Quantity must be a whole number between 0 and 2147483647.";
   }
 
   const mileage = Number(values.mileage);
@@ -101,7 +131,9 @@ function EditCarForm({ car }: { car: Car }) {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["cars"] }),
-        queryClient.invalidateQueries({ queryKey: ["car", car.id] }),
+        queryClient.invalidateQueries({
+          queryKey: ["car", car.id],
+        }),
         queryClient.invalidateQueries({ queryKey: ["admin"] }),
       ]);
 
@@ -139,8 +171,10 @@ function EditCarForm({ car }: { car: Car }) {
     const input: UpdateCarInput = {
       make: values.make.trim(),
       model: values.model.trim(),
+      category: values.category.trim(),
       year: Number(values.year),
       price: Number(values.price).toFixed(2),
+      quantity: Number(values.quantity),
       mileage: Number(values.mileage),
       fuel_type: values.fuel_type,
       transmission: values.transmission,
@@ -197,7 +231,8 @@ function EditCarForm({ car }: { car: Car }) {
           </h2>
 
           <p className="mt-2 text-sm text-slate-500">
-            Update the vehicle details and availability status.
+            Update vehicle specifications, inventory quantity, and availability
+            status.
           </p>
         </div>
 
@@ -238,6 +273,36 @@ function EditCarForm({ car }: { car: Car }) {
 
           <div>
             <label
+              htmlFor="edit-category"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Vehicle Category
+            </label>
+            <select
+              id="edit-category"
+              required
+              value={values.category}
+              onChange={(event) => updateField("category", event.target.value)}
+              className={inputStyles}
+            >
+              {!categories.some(
+                (category) => category.value === values.category,
+              ) && (
+                <option value={values.category}>
+                  {values.category || "Select a category"}
+                </option>
+              )}
+
+              {categories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
               htmlFor="edit-year"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
@@ -261,7 +326,7 @@ function EditCarForm({ car }: { car: Car }) {
               htmlFor="edit-price"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Price (₹)
+              Price (INR)
             </label>
             <input
               id="edit-price"
@@ -274,6 +339,30 @@ function EditCarForm({ car }: { car: Car }) {
               onChange={(event) => updateField("price", event.target.value)}
               className={inputStyles}
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="edit-quantity"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Quantity in Stock
+            </label>
+            <input
+              id="edit-quantity"
+              type="number"
+              required
+              min={0}
+              max={2147483647}
+              step={1}
+              value={values.quantity}
+              onChange={(event) => updateField("quantity", event.target.value)}
+              className={inputStyles}
+            />
+
+            <p className="mt-2 text-xs text-slate-500">
+              Set to 0 when the vehicle is out of stock.
+            </p>
           </div>
 
           <div>
@@ -380,7 +469,7 @@ function EditCarForm({ car }: { car: Car }) {
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Save size={18} />
             {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}

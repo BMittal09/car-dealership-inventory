@@ -13,12 +13,22 @@ describe("GET /api/cars/:id", () => {
 
     const result = await db.query<{ id: string }>(
       `INSERT INTO public.cars (
-        make, model, year, price, mileage,
-        fuel_type, transmission
+        make, model, category, year, price,
+        quantity, mileage, fuel_type, transmission
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id`,
-      ["Toyota", "Camry", 2022, "1850000.00", 25000, "petrol", "automatic"],
+      [
+        "Toyota",
+        "Camry",
+        "sedan",
+        2022,
+        "1850000.00",
+        5,
+        25000,
+        "petrol",
+        "automatic",
+      ],
     );
 
     const carId = result.rows[0]!.id;
@@ -33,8 +43,10 @@ describe("GET /api/cars/:id", () => {
         id: carId,
         make: "Toyota",
         model: "Camry",
+        category: "sedan",
         year: 2022,
         price: "1850000.00",
+        quantity: 5,
         mileage: 25000,
         fuel_type: "petrol",
         transmission: "automatic",
@@ -46,7 +58,9 @@ describe("GET /api/cars/:id", () => {
   }, 30000);
 
   it("returns 404 when the car does not exist", async () => {
-    const app = createTestApp({ database: getDatabase() });
+    const app = createTestApp({
+      database: getDatabase(),
+    });
 
     const response = await request(app).get(`/api/cars/${randomUUID()}`);
 
@@ -60,7 +74,9 @@ describe("GET /api/cars/:id", () => {
   });
 
   it("rejects an invalid car ID", async () => {
-    const app = createTestApp({ database: getDatabase() });
+    const app = createTestApp({
+      database: getDatabase(),
+    });
 
     const response = await request(app).get("/api/cars/not-a-valid-uuid");
 

@@ -5,6 +5,7 @@ import {
   ArrowRight,
   CarFront,
   CheckCircle2,
+  PackagePlus,
   Pencil,
   Plus,
   RefreshCw,
@@ -15,6 +16,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router";
 import { deleteCar, getCars, type Car, type CarStatus } from "../api/cars";
 import DeleteCarDialog from "../components/DeleteCarDialog";
+import RestockVehicleDialog from "../components/RestockVehicleDialog";
 import { useAuth } from "../hooks/useAuth";
 
 const PAGE_SIZE = 10;
@@ -22,7 +24,7 @@ const PAGE_SIZE = 10;
 const statusStyles: Record<CarStatus, string> = {
   available: "bg-emerald-50 text-emerald-700",
   reserved: "bg-amber-50 text-amber-700",
-  sold: "bg-slate-100 text-slate-700",
+  sold: "bg-slate-100 text-slate-600",
 };
 
 interface NavigationState {
@@ -48,6 +50,7 @@ export default function AdminCarsPage() {
   const [status, setStatus] = useState<CarStatus | undefined>();
 
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
+  const [restockCar, setRestockCar] = useState<Car | null>(null);
 
   const [successMessage, setSuccessMessage] = useState<string | null>(() => {
     const state = location.state as NavigationState | null;
@@ -112,8 +115,6 @@ export default function AdminCarsPage() {
         }),
       ]);
 
-      // If the final record on a page was deleted,
-      // return to the previous page.
       if (pagination && page > 1) {
         const newTotal = Math.max(0, pagination.total - 1);
         const lastPage = Math.max(1, Math.ceil(newTotal / PAGE_SIZE));
@@ -155,6 +156,14 @@ export default function AdminCarsPage() {
     }
 
     deleteMutation.mutate(selectedCar.id);
+  }
+
+  function openRestockDialog(car: Car) {
+    setRestockCar(car);
+  }
+
+  function closeRestockDialog() {
+    setRestockCar(null);
   }
 
   function dismissSuccessMessage() {
@@ -213,7 +222,7 @@ export default function AdminCarsPage() {
           </h1>
 
           <p className="mt-3 text-sm text-slate-600">
-            View and manage your dealership inventory.
+            View, update, restock, and manage your dealership inventory.
           </p>
         </div>
 
@@ -323,16 +332,18 @@ export default function AdminCarsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left">
+            <table className="w-full min-w-[1050px] text-left">
               <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Vehicle</th>
+
+                  <th className="px-6 py-4 font-semibold">Category</th>
 
                   <th className="px-6 py-4 font-semibold">Year</th>
 
                   <th className="px-6 py-4 font-semibold">Price</th>
 
-                  <th className="px-6 py-4 font-semibold">Mileage</th>
+                  <th className="px-6 py-4 font-semibold">Stock</th>
 
                   <th className="px-6 py-4 font-semibold">Status</th>
 
@@ -355,6 +366,10 @@ export default function AdminCarsPage() {
                       </p>
                     </td>
 
+                    <td className="px-6 py-5 text-sm capitalize text-slate-600">
+                      {car.category}
+                    </td>
+
                     <td className="px-6 py-5 text-sm text-slate-600">
                       {car.year}
                     </td>
@@ -363,8 +378,22 @@ export default function AdminCarsPage() {
                       {formatPrice(car.price)}
                     </td>
 
-                    <td className="px-6 py-5 text-sm text-slate-600">
-                      {new Intl.NumberFormat("en-IN").format(car.mileage)} km
+                    <td className="px-6 py-5">
+                      <span
+                        className={`text-sm font-bold ${
+                          car.quantity === 0
+                            ? "text-red-600"
+                            : "text-emerald-700"
+                        }`}
+                      >
+                        {car.quantity}
+                      </span>
+
+                      {car.quantity === 0 && (
+                        <p className="mt-1 text-xs text-red-600">
+                          Out of stock
+                        </p>
+                      )}
                     </td>
 
                     <td className="px-6 py-5">
@@ -377,6 +406,16 @@ export default function AdminCarsPage() {
 
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openRestockDialog(car)}
+                          aria-label={`Restock ${car.make} ${car.model}`}
+                          title="Restock vehicle"
+                          className="rounded-lg p-2 text-emerald-700 transition hover:bg-emerald-50"
+                        >
+                          <PackagePlus size={18} />
+                        </button>
+
                         <Link
                           to={`/admin/cars/${car.id}/edit`}
                           aria-label={`Edit ${car.make} ${car.model}`}
@@ -447,6 +486,10 @@ export default function AdminCarsPage() {
           onConfirm={confirmDelete}
           onCancel={closeDeleteDialog}
         />
+      )}
+
+      {restockCar && (
+        <RestockVehicleDialog car={restockCar} onClose={closeRestockDialog} />
       )}
     </div>
   );

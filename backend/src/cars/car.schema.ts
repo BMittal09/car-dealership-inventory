@@ -5,9 +5,13 @@ export const createCarSchema = z.strictObject({
 
   model: z.string().trim().min(1).max(100),
 
+  category: z.string().trim().min(1).max(100),
+
   year: z.number().int().min(1886).max(2100),
 
   price: z.string().regex(/^(0|[1-9]\d{0,9})\.\d{2}$/),
+
+  quantity: z.number().int().min(0),
 
   mileage: z.number().int().min(0),
 

@@ -11,8 +11,10 @@ describe("POST /api/cars", () => {
   const validCar = {
     make: "Toyota",
     model: "Camry",
+    category: "sedan",
     year: 2022,
     price: "1850000.00",
+    quantity: 5,
     mileage: 25000,
     fuel_type: "petrol",
     transmission: "automatic",
@@ -78,7 +80,9 @@ describe("POST /api/cars", () => {
   }, 30000);
 
   it("rejects unauthenticated requests", async () => {
-    const app = createTestApp({ database: getDatabase() });
+    const app = createTestApp({
+      database: getDatabase(),
+    });
 
     const response = await request(app).post("/api/cars").send(validCar);
 
@@ -92,7 +96,10 @@ describe("POST /api/cars", () => {
   });
 
   it("rejects authenticated regular users", async () => {
-    const app = createTestApp({ database: getDatabase() });
+    const app = createTestApp({
+      database: getDatabase(),
+    });
+
     const token = await createUserAndLogin("user");
 
     const response = await request(app)

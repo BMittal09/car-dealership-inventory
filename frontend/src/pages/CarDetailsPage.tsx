@@ -8,9 +8,11 @@ import {
   RefreshCw,
   Settings2,
   ShieldCheck,
+  Tag,
 } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { ApiError, getCarById, type Car } from "../api/cars";
+import PurchaseVehicleButton from "../components/PurchaseVehicleButton";
 
 const statusStyles: Record<Car["status"], string> = {
   available: "bg-emerald-100 text-emerald-800",
@@ -47,6 +49,7 @@ export default function CarDetailsPage() {
     return (
       <div role="alert" className="py-20 text-center">
         <h1 className="text-2xl font-bold">Invalid vehicle link</h1>
+
         <Link to="/cars" className="mt-5 inline-block text-blue-600">
           Return to Inventory
         </Link>
@@ -121,6 +124,11 @@ export default function CarDetailsPage() {
       label: "Model Year",
       value: String(car.year),
       icon: CalendarDays,
+    },
+    {
+      label: "Vehicle Category",
+      value: car.category,
+      icon: Tag,
     },
     {
       label: "Mileage",
@@ -239,6 +247,11 @@ export default function CarDetailsPage() {
               </div>
 
               <div className="flex justify-between gap-4 text-sm">
+                <span className="text-slate-500">Category</span>
+                <span className="font-semibold capitalize">{car.category}</span>
+              </div>
+
+              <div className="flex justify-between gap-4 text-sm">
                 <span className="text-slate-500">Year</span>
                 <span className="font-semibold">{car.year}</span>
               </div>
@@ -249,9 +262,11 @@ export default function CarDetailsPage() {
               </div>
             </div>
 
+            <PurchaseVehicleButton car={car} />
+
             <Link
               to="/cars"
-              className="mt-9 flex w-full items-center justify-center rounded-xl bg-slate-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-blue-600"
+              className="mt-7 flex w-full items-center justify-center rounded-xl border border-slate-200 px-6 py-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Explore More Vehicles
             </Link>
@@ -265,8 +280,8 @@ export default function CarDetailsPage() {
             </h3>
 
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              Review vehicle specifications, pricing, and availability in one
-              convenient place.
+              Review vehicle specifications, pricing, stock availability, and
+              purchase options in one convenient place.
             </p>
           </div>
         </aside>
