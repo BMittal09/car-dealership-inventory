@@ -1,9 +1,16 @@
 import express from "express";
+import type { Pool } from "pg";
 
-export const app = express();
+export interface AppDependencies {
+  database: Pick<Pool, "query">;
+}
 
-app.get("/api/health", (_request, response) => {
-  response.status(200).json({
-    status: "ok",
+export function createApp(_dependencies: AppDependencies) {
+  const app = express();
+
+  app.get("/api/health", (_request, response) => {
+    response.status(200).json({ status: "ok" });
   });
-});
+
+  return app;
+}
