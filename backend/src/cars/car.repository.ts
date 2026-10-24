@@ -31,6 +31,7 @@ export interface CarRepository {
   findAll(query: CarQueryInput): Promise<CarListResult>;
   findById(id: string): Promise<Car | null>;
   update(id: string, input: UpdateCarInput): Promise<Car | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 const CAR_COLUMNS = `
@@ -204,6 +205,17 @@ export function createCarRepository(database: Database): CarRepository {
       );
 
       return result.rows[0] ?? null;
+    },
+
+    async delete(id: string) {
+      const result = await database.query(
+        `DELETE FROM public.cars
+         WHERE id = $1
+         RETURNING id`,
+        [id],
+      );
+
+      return (result.rowCount ?? 0) > 0;
     },
   };
 }

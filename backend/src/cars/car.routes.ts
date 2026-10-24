@@ -14,6 +14,7 @@ export function createCarRouter(
 ) {
   const router = Router();
 
+  // Public: List cars with search, filters, and pagination.
   router.get("/", async (request, response) => {
     const validation = carQuerySchema.safeParse(request.query);
 
@@ -33,6 +34,7 @@ export function createCarRouter(
     response.status(200).json(result);
   });
 
+  // Public: Retrieve a specific car.
   router.get("/:id", async (request, response) => {
     const validation = carIdSchema.safeParse(request.params.id);
 
@@ -63,6 +65,7 @@ export function createCarRouter(
     response.status(200).json({ car });
   });
 
+  // Admin only: Create a car.
   router.post("/", requireAuth, requireAdmin, async (request, response) => {
     const validation = createCarSchema.safeParse(request.body);
 
@@ -82,6 +85,7 @@ export function createCarRouter(
     response.status(201).json({ car });
   });
 
+  // Admin only: Update a car.
   router.patch("/:id", requireAuth, requireAdmin, async (request, response) => {
     const idValidation = carIdSchema.safeParse(request.params.id);
 
@@ -124,6 +128,42 @@ export function createCarRouter(
 
     response.status(200).json({ car });
   });
+
+  // Admin only: Permanently delete a car.
+  router.delete(
+    "/:id",
+    requireAuth,
+    requireAdmin,
+    async (request, response) => {
+      const validation = carIdSchema.safeParse(request.params.id);
+
+      if (!validation.success) {
+        response.status(400).json({
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid car ID.",
+          },
+        });
+
+        return;
+      }
+
+      const deleted = await carService.delete(validation.data);
+
+      if (!deleted) {
+        response.status(404).json({
+          error: {
+            code: "CAR_NOT_FOUND",
+            message: "Car not found.",
+          },
+        });
+
+        return;
+      }
+
+      response.status(204).send();
+    },
+  );
 
   return router;
 }

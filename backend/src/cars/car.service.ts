@@ -7,6 +7,7 @@ export interface CarService {
   findAll(query: CarQueryInput): Promise<CarListResult>;
   findById(id: string): Promise<Car | null>;
   update(id: string, input: UpdateCarInput): Promise<Car | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export function createCarService(carRepository: CarRepository): CarService {
@@ -25,6 +26,10 @@ export function createCarService(carRepository: CarRepository): CarService {
 
     async update(id: string, input: UpdateCarInput) {
       return carRepository.update(id, input);
+    },
+
+    async delete(id: string) {
+      return carRepository.delete(id);
     },
   };
 }
