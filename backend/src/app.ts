@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import { createAuthMiddleware } from "./auth/auth.middleware.js";
+import { createAuthRateLimiters } from "./auth/auth.rate-limit.js";
 import { createAuthRouter } from "./auth/auth.routes.js";
 import { createAuthService } from "./auth/auth.service.js";
 import { createRequireAdmin } from "./auth/authorization.middleware.js";
@@ -17,12 +18,14 @@ export interface AppDependencies {
   database: Database;
   jwtSecret: string;
   allowedOrigins?: string[];
+  authRateLimitMax?: number;
 }
 
 export function createApp({
   database,
   jwtSecret,
   allowedOrigins = [],
+  authRateLimitMax = 10,
 }: AppDependencies) {
   const app = express();
 
@@ -36,13 +39,13 @@ export function createApp({
   const requireAuth = createAuthMiddleware(tokenService);
   const requireAdmin = createRequireAdmin(userRepository);
 
-  // Disable the header that identifies Express.
+  const { loginLimiter, registrationLimiter } =
+    createAuthRateLimiters(authRateLimitMax);
+
   app.disable("x-powered-by");
 
-  // Apply security headers to all API responses.
   app.use(helmet());
 
-  // Allow approved frontend origins.
   app.use(
     cors({
       origin: allowedOrigins,
@@ -57,6 +60,10 @@ export function createApp({
   app.get("/api/health", (_request, response) => {
     response.status(200).json({ status: "ok" });
   });
+
+  // Apply separate rate limits before authentication routes.
+  app.use("/api/auth/login", loginLimiter);
+  app.use("/api/auth/register", registrationLimiter);
 
   app.use("/api/auth", createAuthRouter(authService));
 
@@ -97,10 +104,8 @@ export function createApp({
     },
   );
 
-  // Public browsing, admin-only modifications.
   app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
 
-  // Centralized error handler must be registered last.
   app.use(errorHandler);
 
   return app;
