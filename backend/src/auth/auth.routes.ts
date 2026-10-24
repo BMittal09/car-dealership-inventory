@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { AuthService } from "./auth.service.js";
 import { registrationSchema } from "./registration.schema.js";
+import { loginSchema } from "./login.schema.js";
 
 export function createAuthRouter(authService: AuthService) {
   const router = Router();
@@ -36,7 +37,20 @@ export function createAuthRouter(authService: AuthService) {
   });
 
   router.post("/login", async (request, response) => {
-    const result = await authService.login(request.body);
+    const validation = loginSchema.safeParse(request.body);
+
+    if (!validation.success) {
+      response.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid login data.",
+        },
+      });
+
+      return;
+    }
+
+    const result = await authService.login(validation.data);
 
     if (!result) {
       response.status(401).json({
