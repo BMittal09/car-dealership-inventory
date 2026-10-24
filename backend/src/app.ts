@@ -1,5 +1,6 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import { createAuthMiddleware } from "./auth/auth.middleware.js";
 import { createAuthRouter } from "./auth/auth.routes.js";
 import { createAuthService } from "./auth/auth.service.js";
@@ -35,6 +36,13 @@ export function createApp({
   const requireAuth = createAuthMiddleware(tokenService);
   const requireAdmin = createRequireAdmin(userRepository);
 
+  // Disable the header that identifies Express.
+  app.disable("x-powered-by");
+
+  // Apply security headers to all API responses.
+  app.use(helmet());
+
+  // Allow approved frontend origins.
   app.use(
     cors({
       origin: allowedOrigins,
@@ -89,8 +97,10 @@ export function createApp({
     },
   );
 
+  // Public browsing, admin-only modifications.
   app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
 
+  // Centralized error handler must be registered last.
   app.use(errorHandler);
 
   return app;
