@@ -1,0 +1,27 @@
+# Installed dependencies
+node_modules/
+
+# Generated builds
+dist/
+build/
+
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Generated test output
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Vitest cache and generated artifacts
+.vitest/
