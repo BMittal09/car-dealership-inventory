@@ -7,6 +7,10 @@ export interface PublicUser {
   role: "user" | "admin";
 }
 
+export interface UserWithPassword extends PublicUser {
+  password_hash: string;
+}
+
 export interface CreateUserRecord {
   name: string;
   email: string;
@@ -15,6 +19,7 @@ export interface CreateUserRecord {
 
 export interface UserRepository {
   create(input: CreateUserRecord): Promise<PublicUser | null>;
+  findByEmail(email: string): Promise<UserWithPassword | null>;
 }
 
 export function createUserRepository(database: Database): UserRepository {
@@ -26,6 +31,17 @@ export function createUserRepository(database: Database): UserRepository {
          ON CONFLICT (LOWER(email)) DO NOTHING
          RETURNING id, name, email, role`,
         [input.name, input.email, input.passwordHash],
+      );
+
+      return result.rows[0] ?? null;
+    },
+
+    async findByEmail(email: string) {
+      const result = await database.query<UserWithPassword>(
+        `SELECT id, name, email, password_hash, role
+         FROM public.users
+         WHERE LOWER(email) = LOWER($1)`,
+        [email],
       );
 
       return result.rows[0] ?? null;
