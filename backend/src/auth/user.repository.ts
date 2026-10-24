@@ -20,6 +20,7 @@ export interface CreateUserRecord {
 export interface UserRepository {
   create(input: CreateUserRecord): Promise<PublicUser | null>;
   findByEmail(email: string): Promise<UserWithPassword | null>;
+  findById(id: string): Promise<PublicUser | null>;
 }
 
 export function createUserRepository(database: Database): UserRepository {
@@ -42,6 +43,17 @@ export function createUserRepository(database: Database): UserRepository {
          FROM public.users
          WHERE LOWER(email) = LOWER($1)`,
         [email],
+      );
+
+      return result.rows[0] ?? null;
+    },
+
+    async findById(id: string) {
+      const result = await database.query<PublicUser>(
+        `SELECT id, name, email, role
+         FROM public.users
+         WHERE id = $1`,
+        [id],
       );
 
       return result.rows[0] ?? null;
