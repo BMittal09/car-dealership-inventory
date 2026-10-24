@@ -1,4 +1,4 @@
-﻿# AutoVault â€” Car Dealership Inventory Management System
+﻿# AutoVault -” Car Dealership Inventory Management System
 
 A full-stack car dealership inventory management application built with **React, TypeScript, Node.js, Express, and PostgreSQL**.
 
