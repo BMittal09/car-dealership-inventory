@@ -121,3 +121,131 @@ export async function getCarById(
     signal,
   );
 }
+
+export interface CreateCarInput {
+  make: string;
+  model: string;
+  year: number;
+  price: string;
+  mileage: number;
+  fuel_type: FuelType;
+  transmission: Transmission;
+}
+
+export async function createCar(
+  input: CreateCarInput,
+  accessToken: string,
+): Promise<CarDetailsResponse> {
+  const response = await fetch("/api/cars", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    let code = "API_ERROR";
+    let message = "Unable to create vehicle. Please try again.";
+
+    try {
+      const body: {
+        error?: {
+          code?: string;
+          message?: string;
+        };
+      } = await response.json();
+
+      code = body.error?.code ?? code;
+      message = body.error?.message ?? message;
+    } catch {
+      // Preserve the fallback error.
+    }
+
+    throw new ApiError(response.status, code, message);
+  }
+
+  return (await response.json()) as CarDetailsResponse;
+}
+
+export interface UpdateCarInput extends Partial<CreateCarInput> {
+  status?: CarStatus;
+}
+
+export async function updateCar(
+  id: string,
+  input: UpdateCarInput,
+  accessToken: string,
+): Promise<CarDetailsResponse> {
+  const response = await fetch(`/api/cars/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    let code = "API_ERROR";
+    let message = "Unable to update vehicle. Please try again.";
+
+    try {
+      const body: {
+        error?: {
+          code?: string;
+          message?: string;
+        };
+      } = await response.json();
+
+      code = body.error?.code ?? code;
+      message = body.error?.message ?? message;
+    } catch {
+      // Preserve the fallback error.
+    }
+
+    throw new ApiError(response.status, code, message);
+  }
+
+  return (await response.json()) as CarDetailsResponse;
+}
+
+export async function deleteCar(
+  id: string,
+  accessToken: string,
+): Promise<void> {
+  const response = await fetch(`/api/cars/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    let code = "API_ERROR";
+    let message = "Unable to delete vehicle. Please try again.";
+
+    try {
+      const body: {
+        error?: {
+          code?: string;
+          message?: string;
+        };
+      } = await response.json();
+
+      code = body.error?.code ?? code;
+      message = body.error?.message ?? message;
+    } catch {
+      // Preserve the fallback error message.
+    }
+
+    throw new ApiError(response.status, code, message);
+  }
+
+  // HTTP 204 has no response body.
+  // Do not call response.json() here.
+}

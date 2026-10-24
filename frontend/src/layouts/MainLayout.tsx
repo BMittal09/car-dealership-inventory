@@ -1,6 +1,15 @@
 import { useState } from "react";
-import { ArrowRight, CarFront, Menu, X } from "lucide-react";
-import { Link, NavLink, Outlet } from "react-router";
+import {
+  ArrowRight,
+  CarFront,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  UserRound,
+  X,
+} from "lucide-react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
+import { useAuth } from "../hooks/useAuth";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -12,8 +21,19 @@ const navigation = [
 export default function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const isAdmin = user?.role === "admin";
+
   function closeMobileMenu() {
     setMobileMenuOpen(false);
+  }
+
+  function handleLogout() {
+    logout();
+    closeMobileMenu();
+    void navigate("/", { replace: true });
   }
 
   return (
@@ -51,23 +71,59 @@ export default function MainLayout() {
                 {item.label}
               </NavLink>
             ))}
+
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `inline-flex items-center gap-2 text-sm font-semibold transition-colors ${
+                    isActive
+                      ? "text-blue-600"
+                      : "text-slate-600 hover:text-slate-950"
+                  }`
+                }
+              >
+                <LayoutDashboard size={17} />
+                Dashboard
+              </NavLink>
+            )}
           </div>
 
           <div className="hidden items-center gap-5 md:flex">
-            <Link
-              to="/login"
-              className="text-sm font-semibold text-slate-700 transition-colors hover:text-blue-600"
-            >
-              Log in
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <UserRound size={18} className="text-blue-600" />
+                  <span className="max-w-36 truncate">{user.name}</span>
+                </div>
 
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-600"
-            >
-              Get Started
-              <ArrowRight size={16} />
-            </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+                >
+                  <LogOut size={16} />
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-semibold text-slate-700 transition hover:text-blue-600"
+                >
+                  Log in
+                </Link>
+
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-600"
+                >
+                  Get Started
+                  <ArrowRight size={16} />
+                </Link>
+              </>
+            )}
           </div>
 
           <button
@@ -106,23 +162,60 @@ export default function MainLayout() {
                 </NavLink>
               ))}
 
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <LayoutDashboard size={17} />
+                  Admin Dashboard
+                </NavLink>
+              )}
+
               <div className="my-2 border-t border-slate-100" />
 
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                className="rounded-lg px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Log in
-              </Link>
+              {isAuthenticated && user ? (
+                <>
+                  <div className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600">
+                    <UserRound size={18} />
+                    {user.name}
+                  </div>
 
-              <Link
-                to="/register"
-                onClick={closeMobileMenu}
-                className="rounded-lg bg-slate-950 px-4 py-3 text-center text-sm font-semibold text-white"
-              >
-                Get Started
-              </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+                  >
+                    <LogOut size={17} />
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="rounded-lg px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Log in
+                  </Link>
+
+                  <Link
+                    to="/register"
+                    onClick={closeMobileMenu}
+                    className="rounded-lg bg-slate-950 px-4 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
