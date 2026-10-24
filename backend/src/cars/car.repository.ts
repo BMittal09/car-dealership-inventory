@@ -17,6 +17,8 @@ export interface Car {
 
 export interface CarRepository {
   create(input: CreateCarInput): Promise<Car>;
+  findAll(): Promise<Car[]>;
+  findById(id: string): Promise<Car | null>;
 }
 
 export function createCarRepository(database: Database): CarRepository {
@@ -63,6 +65,49 @@ export function createCarRepository(database: Database): CarRepository {
       }
 
       return car;
+    },
+
+    async findAll() {
+      const result = await database.query<Car>(
+        `SELECT
+          id,
+          make,
+          model,
+          year,
+          price,
+          mileage,
+          fuel_type,
+          transmission,
+          status,
+          created_at,
+          updated_at
+         FROM public.cars
+         ORDER BY created_at DESC, id DESC`,
+      );
+
+      return result.rows;
+    },
+
+    async findById(id: string) {
+      const result = await database.query<Car>(
+        `SELECT
+          id,
+          make,
+          model,
+          year,
+          price,
+          mileage,
+          fuel_type,
+          transmission,
+          status,
+          created_at,
+          updated_at
+         FROM public.cars
+         WHERE id = $1`,
+        [id],
+      );
+
+      return result.rows[0] ?? null;
     },
   };
 }
