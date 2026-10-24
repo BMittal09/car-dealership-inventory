@@ -17,23 +17,77 @@ export default function DeleteCarDialog({
   onConfirm,
   onCancel,
 }: DeleteCarDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const previousFocus = document.activeElement;
+
     cancelButtonRef.current?.focus();
+
+    return () => {
+      if (previousFocus instanceof HTMLElement) {
+        previousFocus.focus();
+      }
+    };
   }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !isDeleting) {
-        onCancel();
+      if (event.key === "Escape") {
+        if (!isDeleting) {
+          event.preventDefault();
+          onCancel();
+        }
+
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const dialog = dialogRef.current;
+
+      if (!dialog) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      } else if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isDeleting, onCancel]);
 
@@ -47,11 +101,13 @@ export default function DeleteCarDialog({
       }}
     >
       <div
+        ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="delete-car-title"
         aria-describedby="delete-car-description"
-        className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl sm:p-9"
+        tabIndex={-1}
+        className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl outline-none sm:p-9"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
