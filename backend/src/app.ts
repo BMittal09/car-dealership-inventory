@@ -5,6 +5,9 @@ import { createAuthService } from "./auth/auth.service.js";
 import { createRequireAdmin } from "./auth/authorization.middleware.js";
 import { createTokenService } from "./auth/token.service.js";
 import { createUserRepository } from "./auth/user.repository.js";
+import { createCarRepository } from "./cars/car.repository.js";
+import { createCarRouter } from "./cars/car.routes.js";
+import { createCarService } from "./cars/car.service.js";
 import type { Database } from "./database.js";
 
 export interface AppDependencies {
@@ -18,6 +21,9 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
   const userRepository = createUserRepository(database);
   const tokenService = createTokenService(jwtSecret);
   const authService = createAuthService(userRepository, tokenService);
+
+  const carRepository = createCarRepository(database);
+  const carService = createCarService(carRepository);
 
   const requireAuth = createAuthMiddleware(tokenService);
   const requireAdmin = createRequireAdmin(userRepository);
@@ -66,6 +72,8 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
       response.status(200).json({ status: "ok" });
     },
   );
+
+  app.use("/api/cars", requireAuth, requireAdmin, createCarRouter(carService));
 
   return app;
 }
