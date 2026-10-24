@@ -1,4 +1,4 @@
-# AutoVault â€” Test Report
+# AutoVault - Test Report
 
 ## 1. Overview
 
