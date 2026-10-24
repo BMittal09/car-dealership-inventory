@@ -9,6 +9,7 @@ import { createCarRepository } from "./cars/car.repository.js";
 import { createCarRouter } from "./cars/car.routes.js";
 import { createCarService } from "./cars/car.service.js";
 import type { Database } from "./database.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 export interface AppDependencies {
   database: Database;
@@ -73,8 +74,10 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
     },
   );
 
-  // Public inventory browsing; car creation requires administrator access.
   app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
+
+  // Must be registered after all routes.
+  app.use(errorHandler);
 
   return app;
 }
