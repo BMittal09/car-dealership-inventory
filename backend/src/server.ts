@@ -22,6 +22,11 @@ if (
   );
 }
 
+const allowedOrigins = (process.env.CORS_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter((origin) => origin.length > 0);
+
 const pool = new Pool({
   connectionString,
   connectionTimeoutMillis: 15000,
@@ -36,6 +41,7 @@ pool.on("error", (error) => {
 const app = createApp({
   database: pool,
   jwtSecret,
+  allowedOrigins,
 });
 
 const port = Number(process.env.PORT ?? 3000);
