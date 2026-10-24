@@ -1,4 +1,5 @@
 import express from "express";
+import { createAuthMiddleware } from "./auth/auth.middleware.js";
 import { createAuthRouter } from "./auth/auth.routes.js";
 import { createAuthService } from "./auth/auth.service.js";
 import { createTokenService } from "./auth/token.service.js";
@@ -16,6 +17,7 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
   const userRepository = createUserRepository(database);
   const tokenService = createTokenService(jwtSecret);
   const authService = createAuthService(userRepository, tokenService);
+  const requireAuth = createAuthMiddleware(tokenService);
 
   app.use(express.json());
 
@@ -24,6 +26,34 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
   });
 
   app.use("/api/auth", createAuthRouter(authService));
+
+  app.get("/api/auth/me", requireAuth, async (_request, response) => {
+    const authenticatedUser = response.locals.authenticatedUser;
+
+    if (!authenticatedUser) {
+      response.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required.",
+        },
+      });
+      return;
+    }
+
+    const user = await userRepository.findById(authenticatedUser.id);
+
+    if (!user) {
+      response.status(401).json({
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Authentication required.",
+        },
+      });
+      return;
+    }
+
+    response.status(200).json({ user });
+  });
 
   return app;
 }
