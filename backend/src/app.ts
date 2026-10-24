@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import { createAuthMiddleware } from "./auth/auth.middleware.js";
 import { createAuthRouter } from "./auth/auth.routes.js";
@@ -14,9 +15,14 @@ import { errorHandler } from "./middleware/error.middleware.js";
 export interface AppDependencies {
   database: Database;
   jwtSecret: string;
+  allowedOrigins?: string[];
 }
 
-export function createApp({ database, jwtSecret }: AppDependencies) {
+export function createApp({
+  database,
+  jwtSecret,
+  allowedOrigins = [],
+}: AppDependencies) {
   const app = express();
 
   const userRepository = createUserRepository(database);
@@ -28,6 +34,15 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
 
   const requireAuth = createAuthMiddleware(tokenService);
   const requireAdmin = createRequireAdmin(userRepository);
+
+  app.use(
+    cors({
+      origin: allowedOrigins,
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Authorization", "Content-Type"],
+      optionsSuccessStatus: 204,
+    }),
+  );
 
   app.use(express.json());
 
@@ -76,7 +91,6 @@ export function createApp({ database, jwtSecret }: AppDependencies) {
 
   app.use("/api/cars", createCarRouter(carService, requireAuth, requireAdmin));
 
-  // Must be registered after all routes.
   app.use(errorHandler);
 
   return app;
