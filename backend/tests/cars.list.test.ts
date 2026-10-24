@@ -6,17 +6,26 @@ import { useTestDatabase } from "./helpers/database.js";
 describe("GET /api/cars", () => {
   const getDatabase = useTestDatabase();
 
-  it("returns an empty list when no cars exist", async () => {
+  it("returns an empty list with pagination metadata when no cars exist", async () => {
     const app = createTestApp({ database: getDatabase() });
 
     const response = await request(app).get("/api/cars");
 
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toMatch(/application\/json/);
-    expect(response.body).toEqual({ cars: [] });
+
+    expect(response.body).toEqual({
+      cars: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      },
+    });
   });
 
-  it("returns available cars without requiring authentication", async () => {
+  it("returns cars without requiring authentication", async () => {
     const db = getDatabase();
     const app = createTestApp({ database: db });
 
@@ -35,6 +44,7 @@ describe("GET /api/cars", () => {
     const response = await request(app).get("/api/cars");
 
     expect(response.status).toBe(200);
+
     expect(response.body.cars).toHaveLength(2);
 
     expect(response.body.cars).toEqual(
@@ -53,5 +63,12 @@ describe("GET /api/cars", () => {
         }),
       ]),
     );
+
+    expect(response.body.pagination).toEqual({
+      page: 1,
+      limit: 10,
+      total: 2,
+      totalPages: 1,
+    });
   }, 30000);
 });
