@@ -16,4 +16,15 @@ export const createCarSchema = z.strictObject({
   transmission: z.enum(["manual", "automatic"]),
 });
 
+export const updateCarSchema = createCarSchema
+  .extend({
+    status: z.enum(["available", "reserved", "sold"]),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided.",
+  });
+
 export type CreateCarInput = z.infer<typeof createCarSchema>;
+
+export type UpdateCarInput = z.infer<typeof updateCarSchema>;

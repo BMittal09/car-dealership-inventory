@@ -1,6 +1,6 @@
 import type { Database } from "../database.js";
 import type { CarQueryInput } from "./car.query.schema.js";
-import type { CreateCarInput } from "./car.schema.js";
+import type { CreateCarInput, UpdateCarInput } from "./car.schema.js";
 
 export interface Car {
   id: string;
@@ -30,7 +30,14 @@ export interface CarRepository {
   create(input: CreateCarInput): Promise<Car>;
   findAll(query: CarQueryInput): Promise<CarListResult>;
   findById(id: string): Promise<Car | null>;
+  update(id: string, input: UpdateCarInput): Promise<Car | null>;
 }
+
+const CAR_COLUMNS = `
+  id, make, model, year, price, mileage,
+  fuel_type, transmission, status,
+  created_at, updated_at
+`;
 
 export function createCarRepository(database: Database): CarRepository {
   return {
@@ -41,10 +48,7 @@ export function createCarRepository(database: Database): CarRepository {
           fuel_type, transmission
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING
-          id, make, model, year, price, mileage,
-          fuel_type, transmission, status,
-          created_at, updated_at`,
+        RETURNING ${CAR_COLUMNS}`,
         [
           input.make,
           input.model,
@@ -125,10 +129,7 @@ export function createCarRepository(database: Database): CarRepository {
       const offsetParameter = values.length + 2;
 
       const result = await database.query<Car>(
-        `SELECT
-          id, make, model, year, price, mileage,
-          fuel_type, transmission, status,
-          created_at, updated_at
+        `SELECT ${CAR_COLUMNS}
          FROM public.cars
          ${whereClause}
          ORDER BY created_at DESC, id DESC
@@ -150,13 +151,56 @@ export function createCarRepository(database: Database): CarRepository {
 
     async findById(id: string) {
       const result = await database.query<Car>(
-        `SELECT
-          id, make, model, year, price, mileage,
-          fuel_type, transmission, status,
-          created_at, updated_at
+        `SELECT ${CAR_COLUMNS}
          FROM public.cars
          WHERE id = $1`,
         [id],
+      );
+
+      return result.rows[0] ?? null;
+    },
+
+    async update(id: string, input: UpdateCarInput) {
+      const allowedColumns = [
+        "make",
+        "model",
+        "year",
+        "price",
+        "mileage",
+        "fuel_type",
+        "transmission",
+        "status",
+      ] as const;
+
+      const updates: string[] = [];
+      const values: unknown[] = [];
+
+      for (const column of allowedColumns) {
+        const value = input[column];
+
+        if (value !== undefined) {
+          values.push(value);
+          updates.push(`${column} = $${values.length}`);
+        }
+      }
+
+      if (updates.length === 0) {
+        throw new Error("At least one update field is required.");
+      }
+
+      values.push(id);
+
+      const result = await database.query<Car>(
+        `UPDATE public.cars
+         SET
+           ${updates.join(", ")},
+           updated_at = GREATEST(
+             clock_timestamp(),
+             updated_at + INTERVAL '1 millisecond'
+           )
+         WHERE id = $${values.length}
+         RETURNING ${CAR_COLUMNS}`,
+        values,
       );
 
       return result.rows[0] ?? null;
