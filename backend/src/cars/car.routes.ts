@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { RequestHandler } from "express";
 import * as z from "zod";
+import { carQuerySchema } from "./car.query.schema.js";
 import type { CarService } from "./car.service.js";
 import { createCarSchema } from "./car.schema.js";
 
@@ -13,10 +14,23 @@ export function createCarRouter(
 ) {
   const router = Router();
 
-  router.get("/", async (_request, response) => {
-    const cars = await carService.findAll();
+  router.get("/", async (request, response) => {
+    const validation = carQuerySchema.safeParse(request.query);
 
-    response.status(200).json({ cars });
+    if (!validation.success) {
+      response.status(400).json({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid inventory query parameters.",
+        },
+      });
+
+      return;
+    }
+
+    const result = await carService.findAll(validation.data);
+
+    response.status(200).json(result);
   });
 
   router.get("/:id", async (request, response) => {
