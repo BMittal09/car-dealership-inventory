@@ -76,8 +76,8 @@ npm test
 **Results:**
 
 ```text
-Test Files  9 passed (9)
-Tests       60 passed (60)
+Test Files  10 passed (9)
+Tests       71 passed (60)
 Duration    7.12s
 ```
 
