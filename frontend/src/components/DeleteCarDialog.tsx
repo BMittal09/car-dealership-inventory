@@ -93,7 +93,7 @@ export default function DeleteCarDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !isDeleting) {
           onCancel();
@@ -107,10 +107,11 @@ export default function DeleteCarDialog({
         aria-labelledby="delete-car-title"
         aria-describedby="delete-car-description"
         tabIndex={-1}
-        className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl outline-none sm:p-9"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-[#11151C] p-7 text-white shadow-2xl shadow-black/50 outline-none sm:p-9"
       >
+        {/* Header */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/25 bg-red-500/10 text-red-400">
             <AlertTriangle size={28} />
           </div>
 
@@ -119,46 +120,62 @@ export default function DeleteCarDialog({
             onClick={onCancel}
             disabled={isDeleting}
             aria-label="Close dialog"
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 disabled:opacity-50"
+            className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
           >
             <X size={20} />
           </button>
         </div>
 
+        {/* Title */}
         <h2
           id="delete-car-title"
-          className="mt-6 text-2xl font-bold tracking-tight text-slate-950"
+          className="mt-7 text-2xl font-bold tracking-tight text-white"
         >
           Delete Vehicle?
         </h2>
 
+        {/* Description */}
         <p
           id="delete-car-description"
-          className="mt-4 text-sm leading-7 text-slate-600"
+          className="mt-4 text-sm leading-7 text-slate-400"
         >
           Are you sure you want to permanently delete{" "}
-          <strong className="text-slate-950">
+          <strong className="font-semibold text-white">
             {car.make} {car.model}
           </strong>
           ? This action cannot be undone.
         </p>
 
+        {/* Warning */}
+        <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-red-400" />
+
+            <p className="text-sm leading-6 text-red-200">
+              This vehicle listing will be permanently removed from your
+              inventory.
+            </p>
+          </div>
+        </div>
+
+        {/* API Error */}
         {errorMessage && (
           <div
             role="alert"
-            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mt-5 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300"
           >
             {errorMessage}
           </div>
         )}
 
+        {/* Actions */}
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
             disabled={isDeleting}
-            className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
           >
             Cancel
           </button>
@@ -167,9 +184,10 @@ export default function DeleteCarDialog({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Trash2 size={17} />
+
             {isDeleting ? "Deleting..." : "Delete Vehicle"}
           </button>
         </div>

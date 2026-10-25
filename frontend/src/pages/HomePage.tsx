@@ -1,8 +1,10 @@
 import {
+  ArrowDown,
   ArrowRight,
+  ArrowUpRight,
   BadgeCheck,
-  CarFront,
   ChevronRight,
+  Gauge,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -12,178 +14,277 @@ import { Link } from "react-router";
 const benefits = [
   {
     icon: ShieldCheck,
-    title: "Quality First",
+    number: "01",
+    title: "Confidence in every choice.",
     description:
-      "Explore vehicle listings with clear specifications and transparent information.",
+      "Explore detailed vehicle specifications and transparent listings to make informed decisions.",
   },
   {
     icon: SlidersHorizontal,
-    title: "Find Your Fit",
+    number: "02",
+    title: "Find your perfect match.",
     description:
-      "Filter by price, manufacturer, fuel type, and transmission to narrow your search.",
+      "Discover vehicles that suit your lifestyle with intuitive search and filtering.",
   },
   {
     icon: BadgeCheck,
-    title: "Simple Experience",
+    number: "03",
+    title: "A seamless experience.",
     description:
-      "Compare vehicle details and discover the right option for your needs.",
+      "From discovery to inventory availability, everything is designed around simplicity.",
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="space-y-24 pb-12">
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-slate-950 text-white">
+    <div className="space-y-24 pb-16 sm:space-y-32">
+      {/* Cinematic Hero */}
+      <section className="relative isolate min-h-[680px] overflow-hidden rounded-[1.75rem] bg-[#050505] text-white sm:min-h-[760px] lg:min-h-[790px]">
+        {/* Hero Photograph */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_85%_25%,rgba(37,99,235,0.32),transparent_50%)]"
+          className="absolute inset-0 bg-cover bg-[position:45%_center] bg-no-repeat brightness-[1.35] sm:bg-center"
+          style={{
+            backgroundImage: "url('/images/hero-car.jpg')",
+          }}
+        />
+
+        {/* Readability gradients */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/30 to-black/75"
         />
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 top-20 h-96 w-96 rounded-full border border-white/10"
+          className="absolute inset-0 bg-gradient-to-r from-black/65 via-transparent to-transparent"
         />
 
-        <div className="relative grid min-h-[560px] items-center gap-12 px-8 py-16 sm:px-14 lg:grid-cols-2 lg:px-20 lg:py-24">
-          <div className="max-w-xl">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">
-              <CarFront size={15} />
-              Your next drive starts here
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+        <div className="relative flex min-h-[680px] flex-col justify-between px-7 py-9 sm:min-h-[760px] sm:px-12 sm:py-12 lg:min-h-[790px] lg:px-16">
+          {/* Top Label */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_18px_rgba(59,130,246,0.8)]" />
+
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/75 sm:text-xs">
+                AutoVault / The Collection
+              </span>
             </div>
 
-            <h1 className="text-5xl font-bold leading-[1.08] tracking-tight sm:text-6xl lg:text-[4.5rem]">
-              Find the car
+            <span className="hidden text-xs font-medium uppercase tracking-[0.2em] text-white/50 sm:block">
+              Drive beyond ordinary
+            </span>
+          </div>
+
+          {/* Hero Content */}
+          <div className="relative z-10 max-w-4xl pb-10 pt-20 sm:pb-16">
+            <div className="mb-7 flex items-center gap-3">
+              <span className="h-px w-9 bg-blue-400" />
+
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-300">
+                Discover your next drive
+              </p>
+            </div>
+
+            <h1 className="text-[clamp(3.4rem,8vw,7.5rem)] font-black uppercase leading-[0.93] tracking-[-0.065em] text-white">
+              Not just
               <br />
-              that moves
+              a car.
               <br />
-              <span className="text-blue-400">you forward.</span>
+              <span className="text-white/55">A statement.</span>
             </h1>
 
-            <p className="mt-7 max-w-lg text-base leading-8 text-slate-300 sm:text-lg">
-              Discover vehicles, explore detailed specifications, and find the
-              perfect match for your lifestyle and budget.
+            <p className="mt-8 max-w-lg text-sm leading-7 text-white/75 sm:text-base sm:leading-8">
+              Exceptional vehicles. Thoughtfully curated. Discover the
+              collection and find a drive that reflects who you are.
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-4">
+            <div className="mt-9 flex flex-wrap items-center gap-4">
               <Link
                 to="/cars"
-                className="inline-flex items-center gap-3 rounded-xl bg-blue-600 px-7 py-4 text-sm font-semibold text-white transition hover:bg-blue-500"
+                className="group inline-flex items-center justify-center gap-4 rounded-full bg-blue-600 px-7 py-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-blue-500 sm:px-9"
               >
-                Explore Inventory
-                <ArrowRight size={18} />
+                Explore Collection
+                <ArrowUpRight
+                  size={18}
+                  className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
 
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="inline-flex items-center gap-2 px-4 py-4 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:text-blue-300"
               >
-                Get Started
+                Join AutoVault
                 <ChevronRight size={17} />
               </Link>
             </div>
           </div>
 
-          <div className="relative flex min-h-64 items-center justify-center lg:min-h-96">
-            <div className="absolute h-64 w-64 rounded-full bg-blue-600/20 blur-3xl sm:h-80 sm:w-80" />
+          {/* Hero Footer */}
+          <div className="relative z-10 flex items-end justify-between gap-6 border-t border-white/20 pt-6">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/45">
+                The AutoVault Experience
+              </p>
 
-            <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm sm:p-12">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
-                  AutoVault
-                </span>
-                <span className="h-2 w-2 rounded-full bg-blue-400" />
-              </div>
-
-              <CarFront
-                aria-hidden="true"
-                className="mx-auto my-10 h-36 w-36 text-blue-300 sm:h-44 sm:w-44"
-                strokeWidth={0.8}
-              />
-
-              <div className="border-t border-white/10 pt-6">
-                <p className="text-xl font-semibold">
-                  Your journey. Your choice.
-                </p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Explore the possibilities.
-                </p>
-              </div>
+              <p className="mt-2 text-sm font-medium text-white/85">
+                Your journey begins here.
+              </p>
             </div>
+
+            <a
+              href="#discover"
+              aria-label="Scroll to discover AutoVault"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 text-white transition hover:border-white hover:bg-white/10"
+            >
+              <ArrowDown size={18} />
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="space-y-8">
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-              Discover AutoVault
-            </p>
+      {/* Introduction Section */}
+      <section
+        id="discover"
+        className="grid scroll-mt-28 items-end gap-10 lg:grid-cols-[1fr_1.1fr]"
+      >
+        <div>
+          <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-blue-400">
+            <span className="h-px w-8 bg-blue-500" />
+            The AutoVault Philosophy
+          </p>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-              A better way to find your car.
-            </h2>
+          <h2 className="mt-6 max-w-xl text-4xl font-bold leading-[1.08] tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+            The right car
+            <br />
+            changes
+            <br />
+            <span className="text-slate-400">everything.</span>
+          </h2>
+        </div>
 
-            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
-              Everything you need to explore vehicle inventory in one
-              straightforward experience.
-            </p>
-          </div>
+        <div className="max-w-xl lg:pb-2">
+          <p className="text-base leading-8 text-slate-400 sm:text-lg">
+            Finding your next vehicle should feel exciting, not overwhelming.
+            AutoVault brings together intuitive discovery, detailed
+            specifications, and transparent inventory information in one
+            thoughtfully designed experience.
+          </p>
 
           <Link
             to="/cars"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+            className="group mt-7 inline-flex items-center gap-3 text-sm font-bold text-white transition hover:text-blue-400"
           >
-            View all vehicles
-            <ArrowRight size={17} />
+            Discover the Inventory
+            <ArrowUpRight
+              size={18}
+              className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+            />
           </Link>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="space-y-9">
+        <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+              Why AutoVault
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Built around your journey.
+            </h2>
+          </div>
+
+          <p className="max-w-sm text-sm leading-7 text-slate-400">
+            A better way to explore, compare, and discover vehicles.
+          </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-3">
-          {benefits.map(({ icon: Icon, title, description }) => (
+          {benefits.map(({ icon: Icon, number, title, description }) => (
             <div
-              key={title}
-              className="rounded-2xl border border-slate-200 bg-white p-8 transition hover:border-blue-200 hover:shadow-lg"
+              key={number}
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-[#11151C] p-8 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/30 hover:bg-[#151B25] hover:shadow-xl hover:shadow-black/30"
             >
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <Icon size={24} strokeWidth={1.8} />
+              <div className="flex items-start justify-between">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-[#090B0F] text-blue-400 transition-colors group-hover:border-blue-500/30 group-hover:bg-blue-600 group-hover:text-white">
+                  <Icon size={24} strokeWidth={1.6} />
+                </div>
+
+                <span className="text-sm font-semibold text-slate-500">
+                  {number}
+                </span>
               </div>
 
-              <h3 className="text-lg font-bold text-slate-950">{title}</h3>
+              <h3 className="mt-12 max-w-xs text-xl font-bold leading-snug tracking-tight text-white">
+                {title}
+              </h3>
 
-              <p className="mt-3 text-sm leading-7 text-slate-600">
+              <p className="mt-4 text-sm leading-7 text-slate-400">
                 {description}
               </p>
+
+              <div className="mt-8 h-px w-full bg-white/10 transition-colors group-hover:bg-blue-500/30" />
             </div>
           ))}
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-3xl bg-blue-50 px-8 py-12 sm:px-14 sm:py-16">
-        <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
+      {/* Closing CTA */}
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#0B1124] px-8 py-14 text-white sm:px-14 sm:py-20 lg:px-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl"
+        />
+
+        <div className="relative flex flex-col justify-between gap-10 lg:flex-row lg:items-end">
           <div className="max-w-2xl">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-blue-600">
-              <Search size={18} />
-              Find your next vehicle
+            <div className="flex items-center gap-3">
+              <Gauge size={18} className="text-blue-400" />
+
+              <span className="text-xs font-bold uppercase tracking-[0.24em] text-blue-300">
+                Your next chapter
+              </span>
             </div>
 
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-              Ready to explore the inventory?
+            <h2 className="mt-7 text-4xl font-bold leading-[1.1] tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+              Your next drive
+              <br />
+              starts here.
             </h2>
 
-            <p className="mt-4 leading-7 text-slate-600">
-              Browse available listings, compare specifications, and narrow your
-              options using powerful search filters.
+            <p className="mt-6 max-w-lg text-base leading-8 text-slate-400">
+              Explore the collection, compare specifications, and discover the
+              vehicle that feels right for you.
             </p>
           </div>
 
           <Link
             to="/cars"
-            className="inline-flex shrink-0 items-center gap-3 rounded-xl bg-slate-950 px-7 py-4 text-sm font-semibold text-white transition hover:bg-blue-600"
+            className="group inline-flex shrink-0 items-center justify-center gap-4 self-start rounded-full bg-blue-600 px-8 py-4 text-xs font-bold uppercase tracking-[0.12em] text-white transition hover:bg-blue-500 lg:self-auto"
           >
             Browse Vehicles
-            <ArrowRight size={18} />
+            <ArrowRight
+              size={18}
+              className="transition-transform group-hover:translate-x-1"
+            />
           </Link>
+        </div>
+
+        <div className="relative mt-16 flex flex-wrap items-center justify-between gap-5 border-t border-white/15 pt-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40">
+            AutoVault — Discover the Drive
+          </p>
+
+          <div className="flex items-center gap-2 text-xs font-medium text-white/50">
+            <Search size={14} />
+            Explore. Compare. Discover.
+          </div>
         </div>
       </section>
     </div>

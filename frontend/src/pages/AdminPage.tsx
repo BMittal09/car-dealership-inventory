@@ -1,22 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
+  ArrowUpRight,
   CarFront,
   CheckCircle2,
   Clock3,
   LayoutDashboard,
+  Plus,
   RefreshCw,
-  ShoppingBag,
   ShieldCheck,
+  ShoppingBag,
 } from "lucide-react";
 import { Link } from "react-router";
 import { getCars, type Car } from "../api/cars";
 import { useAuth } from "../hooks/useAuth";
+import { getCarImage } from "../utils/carImages";
 
 const statusStyles: Record<Car["status"], string> = {
-  available: "bg-emerald-50 text-emerald-700",
-  reserved: "bg-amber-50 text-amber-700",
-  sold: "bg-slate-100 text-slate-700",
+  available: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+  reserved: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+  sold: "border-white/10 bg-white/5 text-slate-300",
 };
 
 function formatPrice(price: string) {
@@ -64,25 +67,33 @@ export default function AdminPage() {
       label: "Total Vehicles",
       value: inventoryQuery.data?.pagination.total ?? 0,
       icon: CarFront,
-      color: "bg-blue-50 text-blue-600",
+      color: "text-blue-400",
+      background: "bg-blue-500/10",
+      border: "border-blue-500/20",
     },
     {
       label: "Available",
       value: availableQuery.data?.pagination.total ?? 0,
       icon: CheckCircle2,
-      color: "bg-emerald-50 text-emerald-600",
+      color: "text-emerald-400",
+      background: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
     },
     {
       label: "Reserved",
       value: reservedQuery.data?.pagination.total ?? 0,
       icon: Clock3,
-      color: "bg-amber-50 text-amber-600",
+      color: "text-amber-400",
+      background: "bg-amber-500/10",
+      border: "border-amber-500/20",
     },
     {
       label: "Sold",
       value: soldQuery.data?.pagination.total ?? 0,
       icon: ShoppingBag,
-      color: "bg-slate-100 text-slate-600",
+      color: "text-slate-300",
+      background: "bg-white/5",
+      border: "border-white/10",
     },
   ];
 
@@ -95,33 +106,57 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-10 pb-12">
-      <section className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-        <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-blue-600">
-            <LayoutDashboard size={18} />
-            Administrator Workspace
+    <div className="space-y-9 pb-12">
+      {/* Dashboard Header */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#101521] px-7 py-10 sm:px-10 sm:py-12">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl"
+        />
+
+        <div className="relative flex flex-col justify-between gap-8 sm:flex-row sm:items-end">
+          <div>
+            <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+              <LayoutDashboard size={18} />
+              Administrator Workspace
+            </div>
+
+            <h1 className="mt-5 text-4xl font-bold tracking-[-0.045em] text-white sm:text-5xl">
+              Dashboard<span className="text-blue-500">.</span>
+            </h1>
+
+            <p className="mt-4 max-w-xl text-sm leading-7 text-slate-400">
+              Welcome back,{" "}
+              <span className="font-semibold text-white">
+                {user?.name ?? "Administrator"}
+              </span>
+              . Manage your collection and monitor your inventory.
+            </p>
           </div>
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950">
-            Admin Dashboard
-          </h1>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={refreshDashboard}
+              disabled={isFetching}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+            >
+              <RefreshCw
+                size={17}
+                className={isFetching ? "animate-spin" : ""}
+              />
+              Refresh
+            </button>
 
-          <p className="mt-4 text-slate-600">
-            Welcome back, {user?.name ?? "Administrator"}. Here's an overview of
-            your vehicle inventory.
-          </p>
+            <Link
+              to="/admin/cars/new"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+            >
+              <Plus size={18} />
+              Add Vehicle
+            </Link>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={refreshDashboard}
-          disabled={isFetching}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-        >
-          <RefreshCw size={17} className={isFetching ? "animate-spin" : ""} />
-          Refresh
-        </button>
       </section>
 
       {isLoading ? (
@@ -133,73 +168,86 @@ export default function AdminPage() {
           {Array.from({ length: 4 }, (_, index) => (
             <div
               key={index}
-              className="h-36 animate-pulse rounded-2xl bg-slate-200"
+              className="h-40 animate-pulse rounded-2xl border border-white/10 bg-[#11151C]"
             />
           ))}
         </div>
       ) : isError ? (
         <div
           role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center"
+          className="rounded-2xl border border-red-500/20 bg-red-500/10 p-10 text-center"
         >
-          <h2 className="text-xl font-bold text-slate-950">
+          <h2 className="text-xl font-bold text-white">
             Unable to load dashboard
           </h2>
 
-          <p className="mt-3 text-sm text-slate-600">
+          <p className="mt-3 text-sm text-red-200">
             We couldn't retrieve the latest inventory information.
           </p>
 
           <button
             type="button"
             onClick={refreshDashboard}
-            className="mt-6 rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-600"
+            className="mt-6 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
           >
             Try Again
           </button>
         </div>
       ) : (
         <>
+          {/* KPI Cards */}
           <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {statistics.map(({ label, value, icon: Icon, color }) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${color}`}
-                  >
-                    <Icon size={23} />
-                  </span>
+            {statistics.map(
+              ({ label, value, icon: Icon, color, background, border }) => (
+                <div
+                  key={label}
+                  className="group rounded-2xl border border-white/10 bg-[#11151C] p-6 transition hover:-translate-y-1 hover:border-white/20 hover:bg-[#151B25]"
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl border ${background} ${color} ${border}`}
+                    >
+                      <Icon size={23} />
+                    </span>
+
+                    <ArrowUpRight
+                      size={18}
+                      className="text-slate-600 transition group-hover:text-blue-400"
+                    />
+                  </div>
+
+                  <p className="mt-7 text-4xl font-bold tracking-tight text-white">
+                    {value}
+                  </p>
+
+                  <p className="mt-2 text-sm font-medium text-slate-400">
+                    {label}
+                  </p>
                 </div>
-
-                <p className="mt-6 text-3xl font-bold tracking-tight text-slate-950">
-                  {value}
-                </p>
-
-                <p className="mt-2 text-sm font-medium text-slate-500">
-                  {label}
-                </p>
-              </div>
-            ))}
+              ),
+            )}
           </section>
 
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col justify-between gap-4 border-b border-slate-100 p-6 sm:flex-row sm:items-center">
+          {/* Inventory Overview */}
+          <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#11151C]">
+            <div className="flex flex-col justify-between gap-4 border-b border-white/10 p-6 sm:flex-row sm:items-center sm:p-7">
               <div>
-                <h2 className="text-xl font-bold text-slate-950">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
+                  Your Collection
+                </p>
+
+                <h2 className="mt-3 text-2xl font-bold text-white">
                   Inventory Overview
                 </h2>
 
-                <p className="mt-2 text-sm text-slate-500">
-                  A snapshot of your vehicle listings.
+                <p className="mt-2 text-sm text-slate-400">
+                  A snapshot of your latest vehicle listings.
                 </p>
               </div>
 
               <Link
                 to="/admin/cars"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300"
               >
                 Manage Vehicles
                 <ArrowRight size={17} />
@@ -207,8 +255,8 @@ export default function AdminPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[650px] text-left">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+              <table className="w-full min-w-[720px] text-left">
+                <thead className="bg-[#0B0F15] text-xs uppercase tracking-wider text-slate-500">
                   <tr>
                     <th className="px-6 py-4 font-semibold">Vehicle</th>
                     <th className="px-6 py-4 font-semibold">Year</th>
@@ -218,38 +266,53 @@ export default function AdminPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-white/10">
                   {recentCars.map((car) => (
-                    <tr key={car.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-5">
-                        <p className="font-semibold text-slate-950">
-                          {car.make} {car.model}
-                        </p>
-                        <p className="mt-1 text-xs capitalize text-slate-500">
-                          {car.fuel_type} · {car.transmission}
-                        </p>
+                    <tr
+                      key={car.id}
+                      className="transition hover:bg-white/[0.03]"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={getCarImage(car.category)}
+                            alt=""
+                            loading="lazy"
+                            className="h-14 w-20 shrink-0 rounded-lg object-cover"
+                          />
+
+                          <div>
+                            <p className="font-semibold text-white">
+                              {car.make} {car.model}
+                            </p>
+
+                            <p className="mt-1 text-xs capitalize text-slate-500">
+                              {car.fuel_type} · {car.transmission}
+                            </p>
+                          </div>
+                        </div>
                       </td>
 
-                      <td className="px-6 py-5 text-sm text-slate-600">
+                      <td className="px-6 py-4 text-sm text-slate-400">
                         {car.year}
                       </td>
 
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-950">
+                      <td className="px-6 py-4 text-sm font-semibold text-white">
                         {formatPrice(car.price)}
                       </td>
 
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-4">
                         <span
-                          className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${statusStyles[car.status]}`}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold capitalize ${statusStyles[car.status]}`}
                         >
                           {car.status}
                         </span>
                       </td>
 
-                      <td className="px-6 py-5">
+                      <td className="px-6 py-4">
                         <Link
                           to={`/cars/${car.id}`}
-                          className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                          className="text-sm font-semibold text-blue-400 transition hover:text-blue-300"
                         >
                           View
                         </Link>
@@ -260,23 +323,26 @@ export default function AdminPage() {
               </table>
 
               {recentCars.length === 0 && (
-                <div className="px-6 py-14 text-center text-sm text-slate-500">
+                <div className="px-6 py-14 text-center text-sm text-slate-400">
                   No vehicles in the inventory yet.
                 </div>
               )}
             </div>
           </section>
 
-          <section className="flex items-start gap-4 rounded-2xl border border-blue-100 bg-blue-50 p-6">
-            <ShieldCheck size={25} className="shrink-0 text-blue-600" />
+          {/* Administrator Security Notice */}
+          <section className="flex items-start gap-4 rounded-2xl border border-blue-500/20 bg-[#0B1124] p-6">
+            <ShieldCheck size={25} className="shrink-0 text-blue-400" />
 
             <div>
-              <h2 className="font-bold text-slate-950">Administrator Access</h2>
+              <h2 className="font-bold text-white">
+                Secure Administrator Access
+              </h2>
 
-              <p className="mt-2 text-sm leading-7 text-slate-600">
-                This dashboard is protected by JWT authentication and backend
-                role-based authorization. Vehicle management controls will be
-                added next.
+              <p className="mt-2 text-sm leading-7 text-slate-400">
+                This workspace is protected by JWT authentication and backend
+                role-based authorization. Authorized administrators can create,
+                update, delete, and restock vehicles.
               </p>
             </div>
           </section>

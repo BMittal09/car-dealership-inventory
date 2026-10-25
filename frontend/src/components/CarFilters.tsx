@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, RotateCcw } from "lucide-react";
+import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import type {
   CarFilters as CarFiltersType,
   CarStatus,
@@ -13,7 +13,9 @@ interface CarFiltersProps {
 }
 
 const inputStyles =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
+  "w-full rounded-xl border border-white/10 bg-[#0B0F15] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
+
+const labelStyles = "mb-2 block text-sm font-semibold text-slate-300";
 
 const categories = [
   { value: "sedan", label: "Sedan" },
@@ -45,26 +47,27 @@ export default function CarFilters({
   return (
     <section
       aria-label="Vehicle filters"
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      className="rounded-2xl border border-white/10 bg-[#11151C] p-6 shadow-xl shadow-black/10 sm:p-8"
     >
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
             <SlidersHorizontal size={20} />
           </div>
 
           <div>
-            <h2 className="text-lg font-bold text-slate-950">
-              Filter Vehicles
-            </h2>
-            <p className="text-xs text-slate-500">Narrow down your search</p>
+            <h2 className="text-lg font-bold text-white">Refine Your Search</h2>
+
+            <p className="mt-1 text-xs text-slate-400">
+              Find a vehicle that fits your preferences
+            </p>
           </div>
         </div>
 
         <button
           type="button"
           onClick={onReset}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-600"
+          className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-slate-400 transition hover:bg-white/5 hover:text-blue-400"
         >
           <RotateCcw size={15} />
           Reset Filters
@@ -73,17 +76,14 @@ export default function CarFilters({
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div className="sm:col-span-2 lg:col-span-3">
-          <label
-            htmlFor="car-search"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-search" className={labelStyles}>
             Search by make or model
           </label>
 
           <div className="relative">
             <Search
               size={18}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
             />
 
             <input
@@ -91,7 +91,7 @@ export default function CarFilters({
               type="search"
               value={filters.search ?? ""}
               onChange={(event) => updateFilter("search", event.target.value)}
-              placeholder="e.g. Toyota, Creta, Nexon..."
+              placeholder="Search Toyota, BMW, Creta, Nexon..."
               maxLength={100}
               className={`${inputStyles} pl-11`}
             />
@@ -99,10 +99,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-make"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-make" className={labelStyles}>
             Manufacturer
           </label>
 
@@ -118,10 +115,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-category"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-category" className={labelStyles}>
             Vehicle Category
           </label>
 
@@ -143,10 +137,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-fuel"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-fuel" className={labelStyles}>
             Fuel Type
           </label>
 
@@ -173,10 +164,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-transmission"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-transmission" className={labelStyles}>
             Transmission
           </label>
 
@@ -200,10 +188,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-status"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-status" className={labelStyles}>
             Availability
           </label>
 
@@ -228,10 +213,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-min-price"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-min-price" className={labelStyles}>
             Minimum Price (INR)
           </label>
 
@@ -248,10 +230,7 @@ export default function CarFilters({
         </div>
 
         <div>
-          <label
-            htmlFor="car-max-price"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
+          <label htmlFor="car-max-price" className={labelStyles}>
             Maximum Price (INR)
           </label>
 

@@ -1,6 +1,6 @@
-﻿# AutoVault - Car Dealership Inventory Management System
+# AutoVault - Car Dealership Inventory Management System
 
-A full-stack car dealership inventory management application built with **React, TypeScript, Node.js, Express, and PostgreSQL**.
+A full-stack car dealership inventory management application built with **React, TypeScript, Node.js, Express, and PostgreSQL**, featuring a premium dark automotive interface and category-based vehicle photography.
 
 AutoVault provides a responsive platform for customers to explore vehicle listings, search and filter inventory, view stock availability, and perform simulated vehicle purchases. Administrators can securely manage vehicles, update inventory, restock vehicles, and monitor dealership operations.
 
@@ -20,9 +20,38 @@ The application was developed using **Test-Driven Development (TDD)**, with auto
 
 ![AutoVault Homepage](docs/screenshots/homepage.png)
 
+<details>
+<summary>View homepage features</summary>
+
+![AutoVault Philosophy](docs/screenshots/homepage-philosophy.png)
+
+</details>
+
 ### Vehicle Inventory
 
 ![AutoVault Vehicle Inventory](docs/screenshots/inventory.png)
+
+<details>
+<summary>View inventory search and filters</summary>
+
+![AutoVault Inventory Filters](docs/screenshots/inventory-filters.png)
+
+</details>
+
+### Authentication
+
+<details>
+<summary>View login and registration pages</summary>
+
+#### Login
+
+![AutoVault Login](docs/screenshots/login.png)
+
+#### Registration
+
+![AutoVault Registration](docs/screenshots/register.png)
+
+</details>
 
 ### Administrator Dashboard
 
@@ -31,6 +60,13 @@ The application was developed using **Test-Driven Development (TDD)**, with auto
 ### Vehicle Management
 
 ![AutoVault Vehicle Management](docs/screenshots/vehicle-management.png)
+
+<details>
+<summary>View vehicle creation form</summary>
+
+![AutoVault Add Vehicle](docs/screenshots/add-vehicle.png)
+
+</details>
 
 ---
 
@@ -49,6 +85,8 @@ The application was developed using **Test-Driven Development (TDD)**, with auto
 - Cancel a purchase without changing inventory.
 - Receive purchase success and error notifications.
 - View automatically refreshed inventory quantities after successful purchases.
+- Explore a premium dark-themed interface with cinematic automotive photography, responsive vehicle cards, and modern navigation.
+- View representative vehicle photographs selected automatically by category.
 - Access a responsive interface across desktop and mobile devices.
 
 **Purchase behavior:** The purchase functionality demonstrates an inventory transaction. Each successful purchase decreases stock by one unit. No payment is collected, financial order is created, or vehicle ownership transferred.
@@ -468,16 +506,17 @@ Frontend tests cover:
 - Inventory cache invalidation
 - Delete confirmation behavior
 - Keyboard accessibility
+- Category-based vehicle image selection, normalization, and fallback handling
 
 ### Verified Test Results
 
 | Test Suite | Test Files | Passing Tests |
 | ---------- | ---------: | ------------: |
 | Backend    |         32 |           184 |
-| Frontend   |          9 |            60 |
-| **Total**  |     **41** |       **244** |
+| Frontend   |         10 |            71 |
+| **Total**  |     **42** |       **255** |
 
-**All 244 automated tests passed during the final verification.**
+**The latest frontend verification passed all 71 tests. The previous backend verification passed 184 tests, giving a combined total of 255 passing tests across the most recent recorded runs.**
 
 Additional verification results:
 
@@ -591,6 +630,7 @@ I used ChatGPT to assist with different stages of the software development lifec
 - Helped integrate TanStack Query for API communication and cache invalidation.
 - Assisted with implementing purchase confirmation dialogs, stock availability indicators, category filtering, and administrator restocking controls.
 - Helped identify and resolve TypeScript, React Hooks, and frontend testing issues.
+- Assisted with redesigning the interface using a premium dark theme, responsive layouts, and category-based vehicle photography.
 
 **5. Debugging and Testing**
 
@@ -622,14 +662,14 @@ The original AI development conversation is referenced in [PROMPTS.md](PROMPTS.m
 ## Current Limitations
 
 - The purchase endpoint decreases inventory but does not process payments, create orders, or transfer ownership.
-- Vehicle images currently use placeholder illustrations rather than uploaded photographs.
+- Vehicle images use representative category-based photographs rather than photographs of the exact listed vehicles.
 - JWT sessions expire after one hour and do not use refresh tokens.
 - Administrator dashboard statistics represent vehicle listings by status, rather than total stock units.
 - The application is designed as an inventory management and TDD demonstration, not a complete commercial dealership transaction platform.
 
 ## Future Improvements
 
-- Vehicle image uploads and cloud storage.
+- Vehicle-specific photographs, administrator image uploads, and optional cloud storage.
 - Payment integration and order management.
 - Purchase history and inventory transaction logs.
 - Advanced vehicle sorting.

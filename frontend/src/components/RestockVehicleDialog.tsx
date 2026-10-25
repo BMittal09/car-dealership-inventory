@@ -44,7 +44,6 @@ export default function RestockVehicleDialog({
   const [validationError, setValidationError] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const restockMutation = useMutation({
@@ -60,12 +59,8 @@ export default function RestockVehicleDialog({
       queryClient.setQueryData(["car", car.id], result);
 
       await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["cars"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["admin"],
-        }),
+        queryClient.invalidateQueries({ queryKey: ["cars"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin"] }),
         queryClient.invalidateQueries({
           queryKey: ["car", car.id],
         }),
@@ -76,15 +71,17 @@ export default function RestockVehicleDialog({
   const isPending = restockMutation.isPending;
 
   useEffect(() => {
-    previousFocusRef.current =
+    const previouslyFocusedElement =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
 
+    previousFocusRef.current = previouslyFocusedElement;
+
     inputRef.current?.focus();
 
     return () => {
-      previousFocusRef.current?.focus();
+      previouslyFocusedElement?.focus();
     };
   }, []);
 
@@ -93,6 +90,7 @@ export default function RestockVehicleDialog({
       if (event.key === "Escape" && !isPending) {
         event.preventDefault();
         onClose();
+        return;
       }
 
       if (event.key !== "Tab") {
@@ -178,42 +176,47 @@ export default function RestockVehicleDialog({
   const updatedQuantity = restockMutation.data?.car.quantity ?? car.quantity;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-8">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 py-8 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="restock-dialog-title"
-        className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl sm:p-8"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/10 bg-[#11151C] p-6 text-white shadow-2xl shadow-black/50 sm:p-8"
       >
+        {/* Dialog Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-blue-600">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-400">
               <PackagePlus size={19} />
               Inventory Management
             </div>
 
             <h2
               id="restock-dialog-title"
-              className="mt-3 text-2xl font-bold text-slate-950"
+              className="mt-4 text-2xl font-bold tracking-tight text-white"
             >
               Restock Vehicle
             </h2>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Add more units to your inventory.
+            </p>
           </div>
 
           <button
-            ref={closeButtonRef}
             type="button"
             onClick={handleClose}
             disabled={isPending}
             aria-label="Close restock dialog"
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+            className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="mt-6 rounded-2xl bg-slate-50 p-5">
-          <p className="text-lg font-bold text-slate-950">
+        {/* Vehicle Summary */}
+        <div className="mt-7 rounded-2xl border border-white/10 bg-[#0B0F15] p-5">
+          <p className="text-lg font-bold text-white">
             {car.make} {car.model}
           </p>
 
@@ -221,10 +224,10 @@ export default function RestockVehicleDialog({
             {car.year} · {car.category}
           </p>
 
-          <div className="mt-5 flex items-center justify-between">
-            <span className="text-sm text-slate-600">Current Stock</span>
+          <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+            <span className="text-sm text-slate-400">Current Stock</span>
 
-            <span className="font-bold text-slate-950">
+            <span className="font-bold text-white">
               {updatedQuantity} units
             </span>
           </div>
@@ -234,7 +237,7 @@ export default function RestockVehicleDialog({
           <div className="mt-6 space-y-5">
             <div
               role="status"
-              className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"
+              className="flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm font-semibold text-emerald-300"
             >
               <CheckCircle2 size={20} />
               Vehicle restocked successfully.
@@ -243,17 +246,17 @@ export default function RestockVehicleDialog({
             <button
               type="button"
               onClick={handleClose}
-              className="w-full rounded-xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white hover:bg-blue-600"
+              className="w-full rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500"
             >
               Done
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="mt-7 space-y-5">
             <div>
               <label
                 htmlFor="restock-quantity"
-                className="mb-2 block text-sm font-semibold text-slate-700"
+                className="mb-2 block text-sm font-semibold text-slate-300"
               >
                 Quantity to Add
               </label>
@@ -274,35 +277,38 @@ export default function RestockVehicleDialog({
                   restockMutation.reset();
                 }}
                 placeholder="e.g. 5"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:opacity-50"
+                className="w-full rounded-xl border border-white/10 bg-[#0B0F15] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:opacity-50"
               />
             </div>
 
+            {/* Stock Preview */}
             {previewQuantity !== null && (
-              <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-                <p className="text-sm text-blue-700">Stock After Restocking</p>
+              <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                <p className="text-sm text-blue-300">Stock After Restocking</p>
 
-                <p className="mt-1 text-xl font-bold text-blue-950">
+                <p className="mt-1 text-xl font-bold text-white">
                   {previewQuantity} units
                 </p>
               </div>
             )}
 
+            {/* Error */}
             {errorMessage && (
               <div
                 role="alert"
-                className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300"
               >
                 {errorMessage}
               </div>
             )}
 
-            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            {/* Actions */}
+            <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row">
               <button
                 type="button"
                 onClick={handleClose}
                 disabled={isPending}
-                className="flex-1 rounded-xl border border-slate-200 px-5 py-3.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                className="flex-1 rounded-xl border border-white/15 bg-white/5 px-5 py-3.5 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
               >
                 Cancel
               </button>
@@ -310,7 +316,7 @@ export default function RestockVehicleDialog({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3.5 text-sm font-semibold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isPending ? (
                   <>

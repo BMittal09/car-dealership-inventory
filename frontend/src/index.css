@@ -9,8 +9,8 @@
     "Segoe UI",
     sans-serif;
 
-  color: #111827;
-  background-color: #f8fafc;
+  color: #f8fafc;
+  background-color: #090b0f;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,10 +22,15 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #090b0f;
 }
 
 button,
@@ -33,4 +38,25 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background-color: rgba(37, 99, 235, 0.45);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

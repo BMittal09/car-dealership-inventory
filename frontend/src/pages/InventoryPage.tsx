@@ -115,40 +115,64 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-10 pb-12">
-      <section className="rounded-3xl bg-slate-950 px-8 py-12 text-white sm:px-12 sm:py-16">
-        <div className="flex items-center gap-2 text-sm font-semibold text-blue-400">
-          <CarFront size={19} />
-          Explore AutoVault
+      {/* Inventory Hero */}
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#101521] px-8 py-14 text-white sm:px-12 sm:py-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-32 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl"
+        />
+
+        <div className="relative">
+          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-blue-400">
+            <CarFront size={19} />
+            Explore AutoVault
+          </div>
+
+          <h1 className="mt-6 text-4xl font-bold tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+            The Collection.
+          </h1>
+
+          <p className="mt-5 max-w-2xl text-base leading-8 text-slate-400">
+            Explore exceptional vehicles, compare specifications, and discover
+            the right drive for your lifestyle.
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+              Curated Inventory
+            </span>
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+              Transparent Details
+            </span>
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+              Find Your Drive
+            </span>
+          </div>
         </div>
-
-        <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">
-          Find your next vehicle.
-        </h1>
-
-        <p className="mt-5 max-w-2xl leading-8 text-slate-300">
-          Explore our inventory, compare vehicle specifications, and discover
-          the right car for your needs.
-        </p>
       </section>
 
+      {/* Filters */}
       <CarFilters
         filters={filters}
         onChange={handleFiltersChange}
         onReset={resetFilters}
       />
 
+      {/* Inventory Grid */}
       <section>
-        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="mb-8 flex flex-col justify-between gap-4 border-b border-white/10 pb-7 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
               Vehicle Collection
             </p>
 
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Browse Inventory
             </h2>
 
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-slate-400">
               {!priceError && !showLoading && !isError && pagination
                 ? `${pagination.total} vehicle${pagination.total === 1 ? "" : "s"} found`
                 : "Explore our vehicle listings"}
@@ -156,25 +180,27 @@ export default function InventoryPage() {
           </div>
 
           {isFetching && !showLoading && (
-            <span className="inline-flex items-center gap-2 text-sm text-slate-500">
+            <span className="inline-flex items-center gap-2 text-sm text-slate-400">
               <RefreshCw size={15} className="animate-spin" />
               Updating inventory...
             </span>
           )}
         </div>
 
+        {/* Invalid Price */}
         {priceError ? (
           <div
             role="alert"
-            className="rounded-2xl border border-amber-200 bg-amber-50 px-8 py-10 text-center"
+            className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-8 py-12 text-center"
           >
-            <h3 className="text-lg font-bold text-amber-900">
+            <h3 className="text-lg font-bold text-amber-300">
               Check your price filters
             </h3>
 
-            <p className="mt-3 text-sm text-amber-800">{priceError}</p>
+            <p className="mt-3 text-sm text-amber-200">{priceError}</p>
           </div>
         ) : showLoading ? (
+          /* Loading Skeletons */
           <div
             role="status"
             aria-label="Loading vehicles"
@@ -183,29 +209,30 @@ export default function InventoryPage() {
             {Array.from({ length: 6 }, (_, index) => (
               <div
                 key={index}
-                className="h-[430px] animate-pulse rounded-2xl border border-slate-200 bg-white"
+                className="h-[480px] animate-pulse overflow-hidden rounded-2xl border border-white/10 bg-[#11151C]"
               >
-                <div className="h-52 rounded-t-2xl bg-slate-200" />
+                <div className="h-56 bg-white/10" />
 
-                <div className="space-y-4 p-6">
-                  <div className="h-4 w-20 rounded bg-slate-200" />
-                  <div className="h-6 w-40 rounded bg-slate-200" />
-                  <div className="h-20 rounded bg-slate-100" />
-                  <div className="h-7 w-32 rounded bg-slate-200" />
+                <div className="space-y-5 p-6">
+                  <div className="h-4 w-20 rounded bg-white/10" />
+                  <div className="h-7 w-40 rounded bg-white/10" />
+                  <div className="h-20 rounded bg-white/5" />
+                  <div className="h-8 w-32 rounded bg-white/10" />
                 </div>
               </div>
             ))}
           </div>
         ) : isError ? (
+          /* API Error */
           <div
             role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 px-8 py-14 text-center"
+            className="rounded-2xl border border-red-500/20 bg-red-500/10 px-8 py-14 text-center"
           >
-            <h3 className="text-xl font-bold text-slate-950">
+            <h3 className="text-xl font-bold text-white">
               Unable to load inventory
             </h3>
 
-            <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-red-200">
               {error instanceof Error
                 ? error.message
                 : "Something went wrong while loading vehicles."}
@@ -214,35 +241,37 @@ export default function InventoryPage() {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-600"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
             >
               <RefreshCw size={16} />
               Try Again
             </button>
           </div>
         ) : cars.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white px-8 py-20 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+          /* Empty State */
+          <div className="rounded-2xl border border-white/10 bg-[#11151C] px-8 py-20 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
               <Search size={30} />
             </div>
 
-            <h3 className="mt-6 text-xl font-bold text-slate-950">
+            <h3 className="mt-6 text-xl font-bold text-white">
               No vehicles found
             </h3>
 
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-slate-400">
               No vehicles match your current filters.
             </p>
 
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-6 rounded-xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-600"
+              className="mt-6 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
             >
               Clear Filters
             </button>
           </div>
         ) : (
+          /* Vehicle Cards */
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {cars.map((car) => (
               <CarCard key={car.id} car={car} />
@@ -250,6 +279,7 @@ export default function InventoryPage() {
           </div>
         )}
 
+        {/* Pagination */}
         {pagination &&
           pagination.totalPages > 1 &&
           !priceError &&
@@ -257,9 +287,9 @@ export default function InventoryPage() {
           !isError && (
             <nav
               aria-label="Inventory pagination"
-              className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-slate-200 pt-8 sm:flex-row"
+              className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-white/10 pt-8 sm:flex-row"
             >
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-400">
                 Page {pagination.page} of {pagination.totalPages}
               </p>
 
@@ -270,7 +300,7 @@ export default function InventoryPage() {
                   onClick={() =>
                     changePage(Math.max(1, (filters.page ?? 1) - 1))
                   }
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#11151C] px-5 py-3 text-sm font-semibold text-slate-300 transition hover:border-blue-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowLeft size={16} />
                   Previous
@@ -282,7 +312,7 @@ export default function InventoryPage() {
                     (filters.page ?? 1) >= pagination.totalPages || isFetching
                   }
                   onClick={() => changePage((filters.page ?? 1) + 1)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                   <ArrowRight size={16} />

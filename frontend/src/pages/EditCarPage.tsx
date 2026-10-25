@@ -12,6 +12,7 @@ import {
   type Transmission,
   type UpdateCarInput,
 } from "../api/cars";
+import { carFormStyles } from "../components/carFormStyles";
 import { useAuth } from "../hooks/useAuth";
 
 interface CarFormValues {
@@ -37,9 +38,6 @@ const categories = [
   { value: "van", label: "Van" },
   { value: "other", label: "Other" },
 ];
-
-const inputStyles =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
 
 function toFormValues(car: Car): CarFormValues {
   return {
@@ -130,11 +128,15 @@ function EditCarForm({ car }: { car: Car }) {
 
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["cars"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["cars"],
+        }),
         queryClient.invalidateQueries({
           queryKey: ["car", car.id],
         }),
-        queryClient.invalidateQueries({ queryKey: ["admin"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["admin"],
+        }),
       ]);
 
       void navigate("/admin/cars", {
@@ -195,95 +197,102 @@ function EditCarForm({ car }: { car: Car }) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 pb-12">
-      <div>
-        <Link
-          to="/admin/cars"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
-        >
-          <ArrowLeft size={17} />
-          Back to Vehicle Management
-        </Link>
+      {/* Back Navigation */}
+      <Link
+        to="/admin/cars"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300"
+      >
+        <ArrowLeft size={17} />
+        Back to Vehicle Management
+      </Link>
 
-        <div className="mt-6 flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+      {/* Page Header */}
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#101521] px-7 py-9 sm:px-10 sm:py-12">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-blue-600/15 blur-3xl"
+        />
+
+        <div className="relative flex items-center gap-5">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
             <CarFront size={28} />
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-400">
+              Inventory Management
+            </p>
+
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Edit Vehicle
+              <span className="text-blue-500">.</span>
             </h1>
 
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-3 text-sm leading-6 text-slate-400">
               Update {car.make} {car.model} and save your changes.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10"
-      >
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-slate-950">
-            Vehicle Information
-          </h2>
+      {/* Edit Form */}
+      <form onSubmit={handleSubmit} className={carFormStyles.container}>
+        <div className="mb-8 border-b border-white/10 pb-7">
+          <h2 className="text-xl font-bold text-white">Vehicle Information</h2>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm leading-7 text-slate-400">
             Update vehicle specifications, inventory quantity, and availability
             status.
           </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
+          {/* Manufacturer */}
           <div>
-            <label
-              htmlFor="edit-make"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-make" className={carFormStyles.label}>
               Manufacturer
             </label>
+
             <input
               id="edit-make"
+              type="text"
               required
               maxLength={100}
               value={values.make}
               onChange={(event) => updateField("make", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
           </div>
 
+          {/* Model */}
           <div>
-            <label
-              htmlFor="edit-model"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-model" className={carFormStyles.label}>
               Model
             </label>
+
             <input
               id="edit-model"
+              type="text"
               required
               maxLength={100}
               value={values.model}
               onChange={(event) => updateField("model", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
           </div>
 
+          {/* Category */}
           <div>
-            <label
-              htmlFor="edit-category"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-category" className={carFormStyles.label}>
               Vehicle Category
             </label>
+
             <select
               id="edit-category"
               required
               value={values.category}
               onChange={(event) => updateField("category", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             >
               {!categories.some(
                 (category) => category.value === values.category,
@@ -301,13 +310,12 @@ function EditCarForm({ car }: { car: Car }) {
             </select>
           </div>
 
+          {/* Year */}
           <div>
-            <label
-              htmlFor="edit-year"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-year" className={carFormStyles.label}>
               Model Year
             </label>
+
             <input
               id="edit-year"
               type="number"
@@ -317,17 +325,16 @@ function EditCarForm({ car }: { car: Car }) {
               step={1}
               value={values.year}
               onChange={(event) => updateField("year", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
           </div>
 
+          {/* Price */}
           <div>
-            <label
-              htmlFor="edit-price"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-price" className={carFormStyles.label}>
               Price (INR)
             </label>
+
             <input
               id="edit-price"
               type="number"
@@ -337,17 +344,16 @@ function EditCarForm({ car }: { car: Car }) {
               step="0.01"
               value={values.price}
               onChange={(event) => updateField("price", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
           </div>
 
+          {/* Quantity */}
           <div>
-            <label
-              htmlFor="edit-quantity"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-quantity" className={carFormStyles.label}>
               Quantity in Stock
             </label>
+
             <input
               id="edit-quantity"
               type="number"
@@ -357,21 +363,20 @@ function EditCarForm({ car }: { car: Car }) {
               step={1}
               value={values.quantity}
               onChange={(event) => updateField("quantity", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
 
-            <p className="mt-2 text-xs text-slate-500">
+            <p className={carFormStyles.helper}>
               Set to 0 when the vehicle is out of stock.
             </p>
           </div>
 
+          {/* Mileage */}
           <div>
-            <label
-              htmlFor="edit-mileage"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-mileage" className={carFormStyles.label}>
               Mileage (km)
             </label>
+
             <input
               id="edit-mileage"
               type="number"
@@ -380,24 +385,23 @@ function EditCarForm({ car }: { car: Car }) {
               step={1}
               value={values.mileage}
               onChange={(event) => updateField("mileage", event.target.value)}
-              className={inputStyles}
+              className={carFormStyles.input}
             />
           </div>
 
+          {/* Fuel Type */}
           <div>
-            <label
-              htmlFor="edit-fuel"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-fuel" className={carFormStyles.label}>
               Fuel Type
             </label>
+
             <select
               id="edit-fuel"
               value={values.fuel_type}
               onChange={(event) =>
                 updateField("fuel_type", event.target.value as FuelType)
               }
-              className={inputStyles}
+              className={carFormStyles.input}
             >
               <option value="petrol">Petrol</option>
               <option value="diesel">Diesel</option>
@@ -407,40 +411,38 @@ function EditCarForm({ car }: { car: Car }) {
             </select>
           </div>
 
+          {/* Transmission */}
           <div>
-            <label
-              htmlFor="edit-transmission"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-transmission" className={carFormStyles.label}>
               Transmission
             </label>
+
             <select
               id="edit-transmission"
               value={values.transmission}
               onChange={(event) =>
                 updateField("transmission", event.target.value as Transmission)
               }
-              className={inputStyles}
+              className={carFormStyles.input}
             >
               <option value="manual">Manual</option>
               <option value="automatic">Automatic</option>
             </select>
           </div>
 
+          {/* Availability */}
           <div>
-            <label
-              htmlFor="edit-status"
-              className="mb-2 block text-sm font-semibold text-slate-700"
-            >
+            <label htmlFor="edit-status" className={carFormStyles.label}>
               Availability Status
             </label>
+
             <select
               id="edit-status"
               value={values.status}
               onChange={(event) =>
                 updateField("status", event.target.value as CarStatus)
               }
-              className={inputStyles}
+              className={carFormStyles.input}
             >
               <option value="available">Available</option>
               <option value="reserved">Reserved</option>
@@ -449,29 +451,26 @@ function EditCarForm({ car }: { car: Car }) {
           </div>
         </div>
 
+        {/* Validation / API Error */}
         {errorMessage && (
-          <div
-            role="alert"
-            className="mt-8 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
-          >
+          <div role="alert" className={carFormStyles.error}>
             {errorMessage}
           </div>
         )}
 
-        <div className="mt-10 flex flex-col-reverse justify-end gap-3 border-t border-slate-100 pt-8 sm:flex-row">
-          <Link
-            to="/admin/cars"
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-6 py-3.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
+        {/* Form Actions */}
+        <div className="mt-10 flex flex-col-reverse justify-end gap-3 border-t border-white/10 pt-8 sm:flex-row">
+          <Link to="/admin/cars" className={carFormStyles.secondaryButton}>
             Cancel
           </Link>
 
           <button
             type="submit"
             disabled={updateMutation.isPending}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className={carFormStyles.primaryButton}
           >
             <Save size={18} />
+
             {updateMutation.isPending ? "Saving Changes..." : "Save Changes"}
           </button>
         </div>
@@ -494,14 +493,21 @@ export default function EditCarPage() {
   });
 
   if (!id) {
-    return <div role="alert">Invalid vehicle link.</div>;
+    return (
+      <div
+        role="alert"
+        className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8 text-center text-red-300"
+      >
+        Invalid vehicle link.
+      </div>
+    );
   }
 
   if (isPending) {
     return (
       <div
         role="status"
-        className="flex min-h-80 items-center justify-center gap-3 text-slate-500"
+        className="flex min-h-80 items-center justify-center gap-3 text-slate-400"
       >
         <RefreshCw size={22} className="animate-spin" />
         Loading vehicle details...
@@ -516,22 +522,22 @@ export default function EditCarPage() {
     return (
       <div
         role="alert"
-        className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-10 text-center"
+        className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-[#11151C] p-10 text-center"
       >
-        <h1 className="text-2xl font-bold text-slate-950">
+        <h1 className="text-2xl font-bold text-white">
           {notFound ? "Vehicle not found" : "Unable to load vehicle"}
         </h1>
 
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm leading-7 text-slate-400">
           {notFound
             ? "The requested vehicle does not exist."
             : "Please check your connection and try again."}
         </p>
 
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
             to="/admin/cars"
-            className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
           >
             Back to Inventory
           </Link>
@@ -540,7 +546,7 @@ export default function EditCarPage() {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold"
+              className="rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
             >
               Try Again
             </button>

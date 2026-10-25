@@ -256,7 +256,7 @@ export default function PurchaseVehicleButton({
             aria-modal="true"
             aria-labelledby="purchase-dialog-title"
             aria-describedby="purchase-dialog-description"
-            className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl sm:p-8"
+            className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#11151C] p-6 text-white shadow-2xl sm:p-8"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
