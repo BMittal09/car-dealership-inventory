@@ -19,10 +19,10 @@ This report documents the automated verification results for AutoVault, includin
 | Test Suite | Test Files |  Passed | Failed |          Duration |
 | ---------- | ---------: | ------: | -----: | ----------------: |
 | Backend    |         32 |     184 |      0 |     24.73 seconds |
-| Frontend   |          9 |      60 |      0 |      7.12 seconds |
-| **Total**  |     **41** | **244** |  **0** | **31.85 seconds** |
+| Frontend   |          10 |      71 |      0 |      7.12 seconds |
+| **Total**  |     **42** | **255** |  **0** | **31.85 seconds** |
 
-**Result: All 244 automated tests passed.**
+**Result: All 255 automated tests passed.**
 
 These results were obtained from the final local verification run.
 
@@ -96,6 +96,7 @@ Duration    7.12s
 - Delete confirmation behavior
 - Keyboard accessibility
 - Application smoke testing
+- Category-based vehicle image selection, normalization, and fallback handling (11 tests).
 
 ## 5. TypeScript and Build Verification
 
